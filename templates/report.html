@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='analytics';</script>
+<section class="section">
+  <h2 class="section-title">Analytics Report</h2>
+  <div class="report-grid">
+    <div class="report-card"><div class="report-num">{{ total_users }}</div><div class="report-label">Registered Users</div></div>
+    <div class="report-card"><div class="report-num">{{ total_missing }}</div><div class="report-label">Missing Reports</div></div>
+    <div class="report-card"><div class="report-num">{{ total_found }}</div><div class="report-label">Found Reports</div></div>
+    <div class="report-card"><div class="report-num">{{ total_matched }}</div><div class="report-label">AI Matches</div></div>
+    <div class="report-card"><div class="report-num">{{ total_resolved }}</div><div class="report-label">Resolved</div></div>
+    <div class="report-card" style="border-color:#E24B4A;"><div class="report-num" style="color:#E24B4A;">{{ total_critical }}</div><div class="report-label">Critical</div></div>
+    <div class="report-card" style="border-color:#8B0000;"><div class="report-num" style="color:#8B0000;">{{ total_national }}</div><div class="report-label">National Alerts</div></div>
+    <div class="report-card" style="border-color:#378ADD;"><div class="report-num" style="color:#378ADD;">{{ total_sms }}</div><div class="report-label">SMS Sent</div></div>
+    <div class="report-card" style="border-color:#639922;"><div class="report-num" style="color:#639922;">{{ total_otp }}</div><div class="report-label">OTP Verifications</div></div>
+  </div>
+  <h3 style="font-size:16px;font-weight:500;margin:1.5rem 0 1rem;">Security Features</h3>
+  <div class="security-card green">✅ Email Login Required — No anonymous filing</div>
+  <div class="security-card green">✅ Both Aadhaar Numbers Required (Missing + Reporter)</div>
+  <div class="security-card green">✅ Birth Certificate Upload + Registration Number Verified</div>
+  <div class="security-card green">✅ Aadhaar OTP Verification — Active</div>
+  <div class="security-card green">✅ Police-Only Reunion Policy — Active</div>
+  <div class="security-card green">✅ Auto Escalation (24hr/48hr/72hr) — Active</div>
+  <div class="security-card green">✅ SMS Notifications at Every Stage — Active</div>
+  <div class="security-card green">✅ Case Tracking Link — Active</div>
+  <div class="security-card green">✅ Covers ALL Ages (1 to 120) — Active</div>
+</section>
+{% endblock %}

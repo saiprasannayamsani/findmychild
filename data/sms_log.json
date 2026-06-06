@@ -1,0 +1,65 @@
+[
+  {
+    "to": "9100000000",
+    "message": "\ud83d\udea8 NEW MISSING CASE #RC-2001 | Local Police Station \u2013 Missing Persons Unit | Name: prasanna | Age: 10 | Gender: Female | Last Seen: parkal | Priority: CRITICAL | Reporter: sridhar (Parent) Ph: 9029845729 | View: http://127.0.0.1:5000/police",
+    "case_id": "RC-2001",
+    "sent_at": "04 Apr 2026 10:04",
+    "status": "Delivered"
+  },
+  {
+    "to": "9029845729",
+    "message": "FindMyChild: Case #RC-2001 for prasanna registered. Priority: CRITICAL. Police alerted. Track: http://127.0.0.1:5000/track/RC-2001",
+    "case_id": "RC-2001",
+    "sent_at": "04 Apr 2026 10:04",
+    "status": "Delivered"
+  },
+  {
+    "to": "9029845729",
+    "message": "FindMyChild MATCH FOUND! prasanna (#RC-2001) may have been found! Image similarity: 0.0%. Come to police station. Track: http://127.0.0.1:5000/track/RC-2001",
+    "case_id": "RC-2001",
+    "sent_at": "04 Apr 2026 10:04",
+    "status": "Delivered"
+  },
+  {
+    "to": "9029845729",
+    "message": "Welcome to ReuniteAI! Your account nirnaya@gmail.com is registered.",
+    "case_id": "",
+    "sent_at": "04 Apr 2026 12:20",
+    "status": "Delivered"
+  },
+  {
+    "to": "9010098263",
+    "message": "Welcome to ReuniteAI! Your account jayanthi@gmail.com is registered.",
+    "case_id": "",
+    "sent_at": "04 Apr 2026 12:29",
+    "status": "Delivered"
+  },
+  {
+    "to": "+919121763160",
+    "message": "Welcome to ReuniteAI! Your account sai@gmail.com is registered.",
+    "case_id": "",
+    "sent_at": "04 Apr 2026 12:53",
+    "status": "Delivered"
+  },
+  {
+    "to": "9100000000",
+    "message": "\ud83d\udea8 NEW MISSING CASE #RC-2002 | Local Police Station \u2013 Missing Persons Unit | Name: punmai | Age: 12 | Gender: Male | Last Seen: hitech city | Priority: CRITICAL | Reporter: nirnaya (Parent) Ph: 9029845729 | View: http://127.0.0.1:5000/police",
+    "case_id": "RC-2002",
+    "sent_at": "09 Apr 2026 15:32",
+    "status": "Delivered"
+  },
+  {
+    "to": "9029845729",
+    "message": "FindMyChild: Case #RC-2002 for punmai registered. Priority: CRITICAL. Police alerted. Track: http://127.0.0.1:5000/track/RC-2002",
+    "case_id": "RC-2002",
+    "sent_at": "09 Apr 2026 15:32",
+    "status": "Delivered"
+  },
+  {
+    "to": "9029845729",
+    "message": "FindMyChild MATCH FOUND! punmai (#RC-2002) may have been found! Image similarity: 0.0%. Come to police station. Track: http://127.0.0.1:5000/track/RC-2002",
+    "case_id": "RC-2002",
+    "sent_at": "09 Apr 2026 15:32",
+    "status": "Delivered"
+  }
+]

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='chatbot';</script>
+<section class="section">
+  <div class="form-wrap">
+    <h2 class="section-title">AI Assistant</h2>
+    <p class="section-sub">HOPE is available 24/7 — ask anything about missing persons, verification, tracking or escalation</p>
+    <div class="chat-box">
+      <div class="chat-header">
+        <div class="chat-avatar">🤖</div>
+        <div>
+          <div class="chat-title">HOPE — FindMyChild Assistant</div>
+          <div class="chat-status">Online · Available 24/7</div>
+        </div>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="msg msg-bot">Hi! I am <strong>HOPE</strong> — your FindMyChild Assistant.</div>
+        <div class="msg msg-bot">I am here 24/7 to help you find your missing loved one. You are not alone. ❤️</div>
+        <div class="msg msg-bot">Ask me about: reporting a missing person, Aadhaar OTP, birth certificate, case tracking, escalation, or SMS updates.</div>
+        {% if user_msg %}<div class="msg msg-user">{{ user_msg }}</div><div class="msg msg-bot">{{ response }}</div>{% endif %}
+      </div>
+      <div class="quick-replies">
+        <button class="quick-reply" onclick="setMsg('How do I report a missing person?')">How to report?</button>
+        <button class="quick-reply" onclick="setMsg('How does Aadhaar OTP verification work?')">Aadhaar OTP?</button>
+        <button class="quick-reply" onclick="setMsg('How is birth certificate verified?')">Birth certificate?</button>
+        <button class="quick-reply" onclick="setMsg('What happens if person not found after 48 hours?')">Not found 48hrs?</button>
+        <button class="quick-reply" onclick="setMsg('How does SMS notification work?')">SMS updates?</button>
+        <button class="quick-reply" onclick="setMsg('Who gets the alert in police station?')">Who gets alert?</button>
+      </div>
+      <form method="POST" action="/chatbot" class="chat-input-row">
+        <input type="text" name="message" id="chat-input" placeholder="Type your question here..." autocomplete="off" required>
+        <button type="submit" class="chat-send">Send</button>
+      </form>
+    </div>
+    <div class="info-box warning-box" style="margin-top:1rem;">
+      🚨 For real emergencies call <strong>Missing Helpline: 1094</strong> · <strong>Childline: 1098</strong> · <strong>Police: 100</strong> immediately.
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='track';</script>
+<section class="section">
+  <div class="form-wrap">
+    <div class="track-header track-{{ child.color }}">
+      <div class="track-icon">{{ '✅' if child.status=='Resolved' else ('🔵' if 'Match' in child.status else '🔴') }}</div>
+      <div>
+        <div class="track-case-id">Case #{{ child.case_id }}</div>
+        <div class="track-name">{{ child.name }}</div>
+        <div class="track-status">{{ child.status }}</div>
+      </div>
+    </div>
+    <div class="track-card">
+      <h3 class="track-section">Person Details</h3>
+      {% if child.child_photo %}
+      <div style="text-align:center;margin-bottom:16px;">
+        <img src="/uploads/{{ child.child_photo }}" alt="{{ child.name }}"
+          style="width:160px;height:160px;object-fit:cover;border-radius:14px;border:3px solid #6dbf47;box-shadow:0 4px 16px rgba(0,0,0,0.15);"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div style="display:none;width:160px;height:160px;border-radius:14px;border:3px solid #ccc;background:#f5f5f5;align-items:center;justify-content:center;flex-direction:column;margin:0 auto;">
+          <div style="font-size:2rem;">👤</div>
+          <div style="font-size:0.75rem;color:#aaa;margin-top:4px;">Photo unavailable</div>
+        </div>
+        <div style="font-size:0.82rem;color:#888;margin-top:6px;">📷 Child Photo on Record</div>
+      </div>
+      {% endif %}
+      <div class="track-row"><span class="track-label">Name</span><span>{{ child.name }}</span></div>
+      <div class="track-row"><span class="track-label">Age</span><span>{{ child.age }} years</span></div>
+      <div class="track-row"><span class="track-label">Gender</span><span>{{ child.gender }}</span></div>
+      <div class="track-row"><span class="track-label">Last Seen</span><span>{{ child.location }}</span></div>
+      <div class="track-row"><span class="track-label">Reported By</span><span>{{ child.relation }} — {{ child.reporter_email }}</span></div>
+      <div class="track-row"><span class="track-label">Missing Aadhaar</span><span>XXXX-XXXX-{{ child.missing_aadhaar }}</span></div>
+      <div class="track-row"><span class="track-label">Birth Cert Reg</span><span>{{ child.birth_cert_reg }}</span></div>
+      <div class="track-row"><span class="track-label">Reported At</span><span>{{ child.reported_at }}</span></div>
+    </div>
+    <div class="track-card">
+      <h3 class="track-section">Current Status</h3>
+      <div class="track-row"><span class="track-label">Priority</span><span class="badge badge-priority-{{ child.priority|lower }}">{{ child.priority }}</span></div>
+      <div class="track-row"><span class="track-label">Escalation</span><span class="badge badge-esc-{{ child.escalation|lower }}">{{ child.escalation }}</span></div>
+      <div class="track-row"><span class="track-label">Status</span><span>{{ child.status }}</span></div>
+    </div>
+    <div class="track-card">
+      <h3 class="track-section">👮 Officers Notified</h3>
+      {% for officer in child.officers %}<div class="officer-item">✅ {{ officer }}</div>{% endfor %}
+    </div>
+    {% if sms_history %}
+    <div class="track-card">
+      <h3 class="track-section">📱 SMS History</h3>
+      {% for sms in sms_history %}
+      <div class="sms-history-item">
+        <div class="sms-history-time">{{ sms.sent_at }}</div>
+        <div class="sms-history-msg">{{ sms.message }}</div>
+        <div class="sms-history-status">✅ {{ sms.status }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="info-box" style="margin-top:1rem;">🔄 Refresh anytime · 📱 Auto SMS sent · 🚨 Emergency: <strong>1094</strong> or <strong>100</strong></div>
+  </div>
+</section>
+{% endblock %}

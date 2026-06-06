@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='cases';</script>
+<section class="section">
+  <h2 class="section-title">Search Results for "{{ query }}"</h2>
+  <p class="section-sub">{{ results|length }} result(s) found</p>
+  {% if results %}{% for p in results %}
+  <div class="case-card">
+    <div class="case-avatar">👤</div>
+    <div class="case-info">
+      <div class="case-name">{{ p.name if p.name else 'Unknown' }}</div>
+      <div class="case-detail">Age {{ p.age }} · {{ p.gender }} · {{ p.location }}</div>
+      <div class="case-id">Case #{{ p.case_id }} · {{ p.reported_at }} &nbsp;<a href="/track/{{ p.case_id }}" class="track-link">Track →</a></div>
+    </div>
+    <span class="badge badge-missing">{{ p.status }}</span>
+  </div>
+  {% endfor %}{% else %}<p class="empty-msg">No results for "{{ query }}".</p>{% endif %}
+  <a href="/cases" class="btn-primary" style="display:inline-block;margin-top:1rem;">Back to Cases</a>
+</section>
+{% endblock %}

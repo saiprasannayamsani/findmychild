@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='police_dashboard';</script>
+<div class="pn-header">
+  <div>
+    <h2 class="police-title">🔔 Police Notification Centre</h2>
+    <p class="police-sub">Real-time alerts received when public reports missing persons</p>
+  </div>
+  <div class="police-stats">
+    <div class="p-stat"><div class="p-num">{{ notifications|length }}</div><div class="p-label">Total Alerts</div></div>
+    <div class="p-stat"><div class="p-num">{{ notifications|selectattr('type','equalto','NEW_CASE')|list|length }}</div><div class="p-label">New Cases</div></div>
+    <div class="p-stat"><div class="p-num">{{ notifications|selectattr('type','equalto','MATCH')|list|length }}</div><div class="p-label">AI Matches</div></div>
+  </div>
+</div>
+
+<div class="pn-explainer">
+  <div class="pn-step">
+    <div class="pn-step-icon">📝</div>
+    <div class="pn-step-line"></div>
+    <div class="pn-step-label">Parent fills<br>missing form</div>
+  </div>
+  <div class="pn-arrow">→</div>
+  <div class="pn-step">
+    <div class="pn-step-icon">🔐</div>
+    <div class="pn-step-line"></div>
+    <div class="pn-step-label">Aadhaar OTP<br>verified</div>
+  </div>
+  <div class="pn-arrow">→</div>
+  <div class="pn-step">
+    <div class="pn-step-icon">💾</div>
+    <div class="pn-step-line"></div>
+    <div class="pn-step-label">Case saved<br>in system</div>
+  </div>
+  <div class="pn-arrow">→</div>
+  <div class="pn-step pn-step-highlight">
+    <div class="pn-step-icon">🚨</div>
+    <div class="pn-step-line"></div>
+    <div class="pn-step-label">SMS alert sent<br>to police station</div>
+  </div>
+  <div class="pn-arrow">→</div>
+  <div class="pn-step">
+    <div class="pn-step-icon">👮</div>
+    <div class="pn-step-line"></div>
+    <div class="pn-step-label">Appears here<br>instantly</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3 class="dash-section-title">📱 All Police Notifications Received</h3>
+  {% if notifications %}
+    {% for n in notifications %}
+    <div class="pn-card pn-card-{{ n.ntype }}">
+      <div class="pn-card-icon">
+        {% if n.type == 'NEW_CASE' %}🚨
+        {% elif n.type == 'MATCH' %}🤖
+        {% elif n.type == 'ESCALATION' %}📢
+        {% elif n.type == 'RESOLVED' %}✅
+        {% else %}📱{% endif %}
+      </div>
+      <div class="pn-card-body">
+        <div class="pn-card-title">{{ n.title }}</div>
+        <div class="pn-card-msg">{{ n.message }}</div>
+        <div class="pn-card-meta">
+          <span>📞 Sent to: <strong>{{ n.to }}</strong></span>
+          <span>🕐 {{ n.sent_at }}</span>
+          {% if n.case_id %}<span>📋 Case: <strong>{{ n.case_id }}</strong></span>{% endif %}
+          <span class="pn-delivered">✅ Delivered</span>
+        </div>
+      </div>
+      {% if n.case_id %}
+      <a href="/track/{{ n.case_id }}" class="pn-track-btn">View Case →</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="pn-empty">
+    <div style="font-size:3rem;margin-bottom:1rem;">📭</div>
+    <div style="font-weight:700;color:var(--navy);margin-bottom:.4rem;">No notifications yet</div>
+    <div style="font-size:13px;color:var(--text-soft);">When someone reports a missing person, the police station SMS alert will appear here.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

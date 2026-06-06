@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FindMyChild — ReuniteAI Missing Person Alert System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="logo">
+    <div class="logo-icon">🔍</div>
+    Find<span>MyChild</span>
+  </a>
+  <div class="nav-links">
+    <a href="/" class="{{ 'active' if request.endpoint=='home' }}">🏠 Home</a>
+    <a href="/report-missing" class="{{ 'active' if request.endpoint=='report_missing' }}">🚨 Report Missing</a>
+    <a href="/report-found"   class="{{ 'active' if request.endpoint=='report_found' }}">🙌 Report Found</a>
+    <a href="/found-gallery"  class="{{ 'active' if request.endpoint=='found_gallery' }}">🖼️ Found Gallery</a>
+    <a href="/cases"          class="{{ 'active' if request.endpoint=='cases' }}">📋 Cases</a>
+    <a href="/chatbot"        class="{{ 'active' if request.endpoint=='chatbot' }}">🤖 AI Help</a>
+    <a href="/report"         class="{{ 'active' if request.endpoint=='analytics' }}">📊 Report</a>
+    {% if session.user_role == 'police' %}
+      <a href="/police" class="{{ 'active' if request.endpoint=='police_dashboard' }}" style="color:#185FA5;font-weight:700;">👮 Police Dash</a>
+      <span class="nav-user" style="background:#E6F1FB;color:#185FA5;">🔵 {{ session.user_name }} (Police)</span>
+      <a href="/logout" class="nav-logout">⬅ Logout</a>
+    {% elif session.user_email %}
+      <span class="nav-user">👤 {{ session.user_name }}</span>
+      <a href="/logout" class="nav-logout">⬅ Logout</a>
+    {% else %}
+      <a href="/login"    class="{{ 'active' if request.endpoint=='login' }}">🔐 Login</a>
+      <a href="/register" class="nav-register {{ 'active' if request.endpoint=='register' }}">✨ Register</a>
+      <a href="/police/login" class="{{ 'active' if request.endpoint=='police_login' }}" style="color:#185FA5;font-weight:600;border:1.5px solid #85B7EB;border-radius:8px;padding:4px 10px;">👮 Police</a>
+    {% endif %}
+  </div>
+</nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}{% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+      {% if category == 'success' %}✅{% elif category == 'error' %}❌{% elif category == 'match' %}🤖{% else %}ℹ️{% endif %}
+      {{ message }}
+    </div>
+  {% endfor %}{% endif %}
+{% endwith %}
+{% block content %}{% endblock %}
+<footer>
+  <div class="footer-helplines">
+    <div class="helpline-item">📞 Missing Helpline <span class="helpline-num">1094</span></div>
+    <div class="helpline-item">👶 Childline <span class="helpline-num">1098</span></div>
+    <div class="helpline-item">🚔 Police <span class="helpline-num">100</span></div>
+  </div>
+  <p>FindMyChild ReuniteAI &copy; 2025 &nbsp;|&nbsp; AI-Powered Missing Person Alert System &nbsp;|&nbsp; Powered by NCRB Integration</p>
+  <div style="margin-top:8px;font-size:12px;color:#aaa;">
+    👮 Police? <a href="/police/login" style="color:#85B7EB;">Police Login</a> &nbsp;|&nbsp; <a href="/police/register" style="color:#85B7EB;">Police Register</a>
+  </div>
+</footer>
+
+<!-- ── AI Prompt Helper Widget (every page) ────────────────── -->
+<div id="aiHelper" style="position:fixed;bottom:24px;right:20px;z-index:9999;font-family:inherit;">
+  <!-- Toggle button -->
+  <button onclick="toggleAIHelper()" id="aiHelperBtn"
+    style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#0e7a6e,#185FA5);
+           color:#fff;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.25);
+           font-size:1.4rem;display:flex;align-items:center;justify-content:center;transition:transform .2s;"
+    title="AI Tips & Help">🤖</button>
+  <!-- Panel -->
+  <div id="aiHelperPanel"
+    style="display:none;position:absolute;bottom:64px;right:0;width:290px;
+           background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.18);
+           border:1.5px solid #e0f2f1;overflow:hidden;">
+    <div style="background:linear-gradient(90deg,#0e7a6e,#185FA5);color:#fff;padding:10px 14px;
+                display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;">
+      🤖 AI Tips for This Page
+      <span onclick="toggleAIHelper()" style="margin-left:auto;cursor:pointer;font-size:1rem;">✕</span>
+    </div>
+    <div id="aiHelperContent" style="padding:12px 14px;font-size:.8rem;color:#333;line-height:1.65;max-height:320px;overflow-y:auto;"></div>
+    <div style="padding:8px 14px;border-top:1px solid #e0f0ee;">
+      <a href="/chatbot" style="display:block;background:#0e7a6e;color:#fff;text-align:center;
+         padding:7px;border-radius:8px;font-size:.8rem;font-weight:700;text-decoration:none;">
+        💬 Ask AI Assistant →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+var _aiOpen = false;
+function toggleAIHelper() {
+  _aiOpen = !_aiOpen;
+  document.getElementById('aiHelperPanel').style.display = _aiOpen ? 'block' : 'none';
+  document.getElementById('aiHelperBtn').style.transform = _aiOpen ? 'scale(1.1)' : 'scale(1)';
+  if (_aiOpen && !document.getElementById('aiHelperContent').innerHTML) {
+    loadAITips();
+  }
+}
+
+var _pageTips = {
+  'home':         ['🏠 <b>Welcome to FindMyChild!</b> Use the nav to report a missing person or a found person.','🚨 Click <b>Report Missing</b> to file a new case. You need the child's Aadhaar and your Aadhaar for OTP verification.','🖼️ Visit the <b>Found Gallery</b> to browse all reported found persons — police update this regularly.','📊 Check the <b>Report</b> page for AI match statistics and case analytics.'],
+  'report_missing':['📸 <b>Upload a clear recent photo</b> of the missing person — the AI instantly scans the Found database.','✅ If the photo is already in Found records, you'll see a <b>green ALREADY FOUND</b> card — no need to file again!','⚠️ A yellow <b>CAUTION</b> banner means similar age/gender records exist — but the photo does not match, so it's a different person.','📋 Fill all details accurately. Aadhaar OTP confirms your identity. Police are alerted automatically after submission.','🆔 Keep the Case ID (e.g. RC-2001) for tracking on the <b>Track</b> page.'],
+  'report_found': ['👶 Report anyone you found who seems lost or disoriented. The AI matches them to missing cases instantly.','📷 Upload a clear photo — the AI cross-checks against all active missing reports in real-time.','📍 Provide the exact location where you found the person — this helps police coordinate.','✅ After submission, SMS is sent to the matching family if a match is found.'],
+  'found_gallery':['🖼️ This gallery shows all reported found persons with photos.','🔍 Look for your missing family member here before filing a new report.','📋 Each card shows age, gender, location and condition. Contact police with the Found Case ID if you spot someone.'],
+  'cases':        ['📋 All active, matched and resolved cases are listed here.','🔵 Blue/green cases have an AI match — police are already notified.','🔴 Red/orange cases are actively missing and escalating based on time.'],
+  'chatbot':      ['💬 Ask me anything about the system!','📝 Try: "How do I report a missing child?" or "What is Aadhaar OTP?"','🚨 For emergencies: Missing Helpline 1094, Childline 1098, Police 100.'],
+  'analytics':    ['📊 This page shows AI performance — total cases, matches found, resolved cases.','🏆 Match success rate improves as more found persons are reported with clear photos.'],
+  'login':        ['🔐 Login with your registered email and password.','👮 Police officers use the <b>Police Login</b> button with their Badge ID.','✨ New user? Click <b>Register</b> to create an account.'],
+  'register':     ['✨ Register with a valid email and mobile number.','📱 Your mobile number receives case updates and SMS alerts.','🔑 Use a password of at least 6 characters.'],
+  'track':        ['📍 This page shows the current status and escalation level of a case.','⬆️ Cases auto-escalate: LOCAL → DISTRICT → STATE → NATIONAL based on time elapsed.','📱 All SMS notifications for this case are shown at the bottom.'],
+  'police_dashboard':['👮 Manage all active, matched and resolved cases from here.','⚡ Use <b>Resolve</b> once the child is safely reunited.','📲 <b>Contact Parent</b> sends an official police update SMS.','🔔 Check <b>Notifications</b> for all new alerts.'],
+  'default':      ['🤖 AI is scanning all uploaded photos against the Found database in real-time.','📞 Emergency? Call 1094 (Missing), 1098 (Childline), 100 (Police).','💬 Use the <b>AI Help</b> chatbot for guidance on any page.']
+};
+
+function loadAITips() {
+  var page = document.body.dataset.page || 'default';
+  var tips = _pageTips[page] || _pageTips['default'];
+  var html = '<ul style="margin:0;padding:0 0 0 4px;list-style:none;">';
+  tips.forEach(function(t) {
+    html += '<li style="margin-bottom:8px;padding:7px 9px;background:#f1f8f6;border-radius:7px;border-left:3px solid #0e7a6e;">' + t + '</li>';
+  });
+  html += '</ul>';
+  document.getElementById('aiHelperContent').innerHTML = html;
+}
+</script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

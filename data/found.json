@@ -1,0 +1,80 @@
+[
+  {
+    "case_id": "RF-1001",
+    "age": "7",
+    "gender": "Male",
+    "location": "Anna Nagar Bus Stand, Chennai",
+    "condition": "Safe and calm",
+    "desc": "Boy wearing blue school uniform, short hair, no footwear",
+    "phone": "9100000000",
+    "aadhaar": "0001",
+    "found_photo": "default_found_1.jpg",
+    "reporter_email": "finder1@example.com",
+    "reported_at": "03 Apr 2026 08:30"
+  },
+  {
+    "case_id": "RF-1002",
+    "age": "5",
+    "gender": "Female",
+    "location": "T. Nagar Market, Chennai",
+    "condition": "Scared / crying",
+    "desc": "Girl in pink frock, pigtails, has a small red bag",
+    "phone": "9100000000",
+    "aadhaar": "0002",
+    "found_photo": "default_found_2.jpg",
+    "reporter_email": "finder2@example.com",
+    "reported_at": "03 Apr 2026 09:15"
+  },
+  {
+    "case_id": "RF-1003",
+    "age": "10",
+    "gender": "Male",
+    "location": "Egmore Railway Station, Chennai",
+    "condition": "Confused / memory loss",
+    "desc": "Boy with dark complexion, torn shirt, cannot recall name or address",
+    "phone": "9100000000",
+    "aadhaar": "0003",
+    "found_photo": "default_found_3.jpg",
+    "reporter_email": "finder3@example.com",
+    "reported_at": "02 Apr 2026 22:45"
+  },
+  {
+    "case_id": "RF-1004",
+    "age": "8",
+    "gender": "Female",
+    "location": "Velachery Metro Station, Chennai",
+    "condition": "Safe and calm",
+    "desc": "Girl in green kurta, says her name is Priya, doesn't know her address",
+    "phone": "9100000000",
+    "aadhaar": "0004",
+    "found_photo": "default_found_4.jpg",
+    "reporter_email": "finder4@example.com",
+    "reported_at": "02 Apr 2026 19:00"
+  },
+  {
+    "case_id": "RF-1005",
+    "age": "12",
+    "gender": "Male",
+    "location": "Koyambedu Bus Terminal, Chennai",
+    "condition": "Needs medical attention",
+    "desc": "Older boy, minor injuries on hands, wearing grey trousers, very quiet",
+    "phone": "9100000000",
+    "aadhaar": "0005",
+    "found_photo": "default_found_5.jpg",
+    "reporter_email": "finder5@example.com",
+    "reported_at": "01 Apr 2026 14:20"
+  },
+  {
+    "case_id": "RF-1006",
+    "age": "9",
+    "gender": "Female",
+    "location": "Marina Beach, Chennai",
+    "condition": "Safe and calm",
+    "desc": "Girl wearing yellow dress, has a small toy in hand, seems lost",
+    "phone": "9100000000",
+    "aadhaar": "0006",
+    "found_photo": "default_found_6.jpg",
+    "reporter_email": "finder6@example.com",
+    "reported_at": "01 Apr 2026 11:00"
+  }
+]

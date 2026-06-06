@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='police_dashboard';</script>
+<section class="section">
+  <div class="tab-group">
+    <button class="tab active" onclick="showTab('sms-tab',this)">📱 SMS ({{ sms_log|length }})</button>
+    <button class="tab" onclick="showTab('otp-tab',this)">🔐 OTP Log ({{ otp_log|length }})</button>
+  </div>
+  <div id="sms-tab" class="tab-content active">
+    <h2 class="section-title">📱 SMS Log</h2>
+    {% if sms_log %}{% for sms in sms_log %}
+    <div class="sms-log-card">
+      <div class="sms-log-header"><span class="sms-to">📱 {{ sms.to }}</span><span class="sms-time">{{ sms.sent_at }}</span><span class="sms-status-badge">{{ sms.status }}</span></div>
+      <div class="sms-log-body">{{ sms.message }}</div>
+      {% if sms.case_id %}<div class="sms-log-case">Case #{{ sms.case_id }} &nbsp;|&nbsp; <a href="/track/{{ sms.case_id }}" class="track-link">View →</a></div>{% endif %}
+    </div>
+    {% endfor %}{% else %}<p class="empty-msg">No SMS sent yet.</p>{% endif %}
+  </div>
+  <div id="otp-tab" class="tab-content">
+    <h2 class="section-title">🔐 OTP Verification Log</h2>
+    {% if otp_log %}{% for otp in otp_log %}
+    <div class="sms-log-card">
+      <div class="sms-log-header"><span class="sms-to">📱 {{ otp.phone }}</span><span class="sms-time">{{ otp.sent_at }}</span><span class="sms-status-badge">{{ otp.status }}</span></div>
+      <div class="sms-log-body">Aadhaar: XXXX-XXXX-{{ otp.aadhaar }} · OTP verification sent</div>
+    </div>
+    {% endfor %}{% else %}<p class="empty-msg">No OTP verifications yet.</p>{% endif %}
+  </div>
+</section>
+{% endblock %}

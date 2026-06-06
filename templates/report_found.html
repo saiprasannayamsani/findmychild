@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='report_found';</script>
+<section class="section">
+  <div class="form-wrap">
+    <div class="form-card">
+      <h2 class="form-title">Report a Found Person</h2>
+      <p class="form-sub">Found someone who seems lost? Upload their photo or pick a matching default image. AI will compare with all missing reports instantly.</p>
+
+      <div class="steps-bar">
+        <div class="step step-done">✅ Step 1: Email Login</div>
+        <div class="step step-active">📋 Step 2: Fill Details + Photo</div>
+        <div class="step step-pending">🔐 Step 3: Aadhaar OTP</div>
+      </div>
+
+      <form method="POST" action="/report-found" enctype="multipart/form-data">
+
+        <div class="form-section-title">👤 Found Person Details</div>
+        <div class="form-group">
+          <label>Found Person's Name <span style="color:#888;font-weight:400;font-size:.82rem;">(Optional — if they told you their name)</span></label>
+          <input type="text" name="found_name" placeholder="e.g. Priya, Raju — leave blank if unknown">
+          <div class="field-note">Fill only if the person told you their name. This helps family identify them faster.</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Approximate Age *</label>
+            <input type="number" name="age" placeholder="Estimated age" min="1" max="120" required>
+          </div>
+          <div class="form-group">
+            <label>Gender *</label>
+            <select name="gender" required>
+              <option value="">Select</option>
+              <option>Male</option><option>Female</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Location Where Found *</label>
+          <input type="text" name="location" placeholder="Area, landmark, city" required>
+        </div>
+        <div class="form-group">
+          <label>Physical Description</label>
+          <input type="text" name="desc" placeholder="Height, skin tone, hair colour, clothing worn">
+        </div>
+        <div class="form-group">
+          <label>Person's Condition *</label>
+          <select name="condition" required>
+            <option value="">Select condition</option>
+            <option>Safe and calm</option>
+            <option>Scared / crying</option>
+            <option>Confused / memory loss</option>
+            <option>Needs medical attention</option>
+          </select>
+        </div>
+
+        <!-- ── PHOTO SECTION ─────────────────────────────── -->
+        <div class="form-section-title">📸 Photo for AI Matching</div>
+        <p style="font-size:13px;color:#555;margin-bottom:1rem;">
+          A photo is used by AI to match with missing child reports. Upload a new photo <strong>OR</strong> select one of the pre-loaded sample images below.
+        </p>
+
+        <!-- Upload new photo -->
+        <div class="form-group">
+          <label>📤 Upload Photo of Found Person</label>
+          <input type="file" name="found_photo" id="found_photo_upload" accept="image/*"
+                 style="border:2px dashed #6dbf47;padding:12px;border-radius:10px;width:100%;background:#f9fff4;">
+          <div style="font-size:12px;color:#666;margin-top:5px;">Upload a clear front-facing photo. Leave blank if selecting a default below.</div>
+          <div style="margin-top:10px;text-align:center;">
+            <img id="preview-img" src="" style="display:none;max-width:160px;max-height:160px;border-radius:10px;border:2px solid #6dbf47;">
+            <div id="preview-tick" style="display:none;font-size:12px;color:#3B6D11;margin-top:4px;">✅ Photo selected for upload</div>
+          </div>
+          <script>
+          document.getElementById('found_photo_upload').addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+              var img = document.getElementById('preview-img');
+              var tick = document.getElementById('preview-tick');
+              img.src = URL.createObjectURL(file);
+              img.style.display = 'block';
+              tick.style.display = 'block';
+            }
+          });
+          </script>
+        </div>
+
+        <!-- Divider -->
+        <div style="display:flex;align-items:center;gap:12px;margin:1rem 0;">
+          <div style="flex:1;height:1px;background:#ddd;"></div>
+          <span style="color:#888;font-size:13px;font-weight:600;">OR select a default image</span>
+          <div style="flex:1;height:1px;background:#ddd;"></div>
+        </div>
+
+        <!-- Default image picker -->
+        <div style="margin-bottom:1.2rem;">
+          <label style="font-size:13px;font-weight:600;color:#333;display:block;margin-bottom:10px;">
+            🖼️ Pre-loaded Found Person Images — click to select:
+          </label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            {% for i in range(1, 7) %}
+            <label style="cursor:pointer;position:relative;">
+              <input type="radio" name="default_found_photo" value="default_found_{{ i }}.jpg"
+                     style="position:absolute;opacity:0;" onchange="selectDefault(this, {{ i }})">
+              <div id="default-card-{{ i }}"
+                   style="border:2.5px solid #ddd;border-radius:10px;overflow:hidden;transition:all 0.2s;text-align:center;padding:4px;">
+                <img src="/static/images/default_found_{{ i }}.jpg" alt="Found {{ i }}"
+                     style="width:100%;height:100px;object-fit:cover;border-radius:7px;"
+                     onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=\'width:100%;height:100px;background:#f0f0f0;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#888;\'>No Image</div>';">
+                <div style="font-size:10px;color:#555;margin-top:4px;padding:2px;">Sample {{ i }}</div>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+          <div id="default-selected-msg" style="display:none;font-size:12px;color:#185FA5;margin-top:8px;font-weight:600;">
+            ✅ Default image selected — AI will use this for matching
+          </div>
+        </div>
+
+        <!-- LIVE MATCH PANEL - shown after photo upload -->
+        <div id="liveMatchPanel" style="display:none;margin-bottom:1.4rem;">
+          <!-- Scanning -->
+          <div id="matchScanning" style="display:none;background:linear-gradient(135deg,#e8f4ff,#dbeeff);border:2px solid #4a90e2;border-radius:14px;padding:1.2rem 1.4rem;text-align:center;">
+            <div style="font-size:2rem;">&#128269;</div>
+            <div style="font-weight:700;color:#1a4a8a;margin-top:.4rem;">Scanning Missing Persons Database...</div>
+            <div style="font-size:.82rem;color:#4a70aa;margin-top:.3rem;">AI is checking all missing reports for a match</div>
+            <div style="margin-top:.8rem;"><div style="display:inline-block;width:180px;height:6px;background:#c0d8f5;border-radius:4px;overflow:hidden;"><div id="scanBar" style="width:0%;height:100%;background:linear-gradient(90deg,#4a90e2,#0e7a6e);border-radius:4px;transition:width 1.5s ease;"></div></div></div>
+          </div>
+          <!-- No match - still missing -->
+          <div id="matchNone" style="display:none;background:linear-gradient(135deg,#fff8e1,#fff3cd);border:2px solid #f5a623;border-radius:14px;padding:1.2rem 1.4rem;">
+            <div style="font-size:1.3rem;font-weight:800;color:#7a4800;">&#128680; No Match Yet — This Person May Still Be Missing</div>
+            <div style="font-size:.88rem;color:#8a5500;margin-top:.5rem;line-height:1.6;">No matching missing report found right now. Please <b>proceed to submit</b> this Found report — the AI will keep monitoring automatically and alert the family if a match is registered later.</div>
+          </div>
+          <!-- Match found - already reported missing -->
+          <div id="matchFound" style="display:none;">
+            <div style="background:linear-gradient(135deg,#e8ffe8,#d4f5d4);border:2.5px solid #2e7d32;border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:.9rem;">
+              <div style="font-size:1.1rem;font-weight:800;color:#1b5e20;">&#9989; This Person Is Already Reported Missing!</div>
+              <div style="font-size:.85rem;color:#2e7d32;margin-top:.3rem;">The photo matches someone in the missing persons database. Contact police immediately with the Case ID below. Still submit this report to complete the official record.</div>
+            </div>
+            <div id="matchCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;"></div>
+          </div>
+        </div>
+
+        <!-- Reporter details -->
+        <div class="form-section-title">👨 Your Details (Reporter)</div>
+        <div class="form-group">
+          <label>Logged in as</label>
+          <input type="text" value="{{ session.user_name }} ({{ session.user_email }})" disabled style="background:#EAF3DE;color:#3B6D11;">
+        </div>
+        <div class="form-group">
+          <label>Your Aadhaar Number * (OTP sent here)</label>
+          <input type="text" name="aadhaar" placeholder="XXXX XXXX XXXX" maxlength="14" required>
+        </div>
+        <div class="form-group">
+          <label>Your Mobile Number *</label>
+          <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX" required>
+        </div>
+
+        <div class="info-box warning-box">
+          ⚠️ Do NOT hand the person to anyone except police.<br>
+          Stay at your location after submitting.<br>
+          If AI finds a match — family gets SMS instantly! 📱
+        </div>
+        <button type="submit" class="submit-btn">Send OTP &amp; Verify 🔐</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  var selectedDefault = null;
+  var _foundPhotoDataUrl = '';
+
+  // ── Match panel helpers ─────────────────────────────────
+  function showPanel(id) {
+    ['matchScanning','matchNone','matchFound'].forEach(function(p){
+      document.getElementById(p).style.display = (p === id) ? 'block' : 'none';
+    });
+    document.getElementById('liveMatchPanel').style.display = 'block';
+  }
+  function hideMatchPanel() {
+    document.getElementById('liveMatchPanel').style.display = 'none';
+  }
+
+  function buildMissingCard(m) {
+    var foundSrc   = _foundPhotoDataUrl || '';
+    var missingSrc = m.child_photo ? '/uploads/' + m.child_photo : '';
+
+    var noPhotoBox = '<div style="width:100%;height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f0f0f0;color:#aaa;font-size:1.6rem;">&#128100;<div style="font-size:.65rem;margin-top:4px;">No photo</div></div>';
+
+    var foundPhotoHtml = foundSrc
+      ? '<img src="' + foundSrc + '" alt="You uploaded" style="width:100%;height:130px;object-fit:cover;" onerror="this.outerHTML='' + noPhotoBox.replace(/'/g, "\'") + ''">'
+      : noPhotoBox;
+
+    var missingPhotoHtml = missingSrc
+      ? '<img src="' + missingSrc + '" alt="Missing person" style="width:100%;height:130px;object-fit:cover;" onerror="this.outerHTML='' + noPhotoBox.replace(/'/g, "\'") + ''">'
+      : noPhotoBox;
+
+    var alreadyFound  = m.status && (m.status.indexOf('Match') !== -1 || m.status === 'Resolved');
+    var confirmed     = m.confirmed;
+    var borderColor   = confirmed ? '#1b5e20' : (alreadyFound ? '#1565c0' : '#e67e22');
+    var badgeBg       = confirmed ? '#e8f5e9' : (alreadyFound ? '#e3f2fd' : '#fff3e0');
+
+    // Top banner
+    var topBanner = confirmed
+      ? '<div style="background:linear-gradient(90deg,#1b5e20,#2e7d32);color:#fff;text-align:center;padding:8px;font-size:.86rem;font-weight:800;">&#9989; CONFIRMED MATCH — This person IS reported missing! Submit to resolve case.</div>'
+      : (alreadyFound
+          ? '<div style="background:linear-gradient(90deg,#1565c0,#1976d2);color:#fff;text-align:center;padding:8px;font-size:.86rem;font-weight:800;">&#128270; POSSIBLE MATCH — Same age &amp; gender, case ongoing</div>'
+          : '<div style="background:linear-gradient(90deg,#e67e22,#f39c12);color:#fff;text-align:center;padding:8px;font-size:.86rem;font-weight:800;">&#128269; POSSIBLE MATCH — Same age &amp; gender</div>');
+
+    // Status line — clear human-readable message
+    var statusColor = confirmed ? '#1b5e20' : (alreadyFound ? '#1565c0' : '#e67e22');
+    var statusText  = confirmed
+      ? '✅ Already reported missing — Submit this report to RESOLVE the case!'
+      : (alreadyFound
+          ? '🔵 Case ongoing — Please verify photos and contact police'
+          : '⚠️ Possible match — Compare photos carefully');
+
+    var priorityBadge = m.priority
+      ? '<span style="background:' + (m.priority==='CRITICAL'?'#c0392b':m.priority==='HIGH'?'#e67e22':'#888') + ';color:#fff;font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:5px;">' + m.priority + '</span>'
+      : '';
+
+    return '<div style="background:#fff;border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,0.15);overflow:hidden;border:2.5px solid ' + borderColor + ';margin-bottom:8px;">'
+      + topBanner
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;">'
+      +   '<div style="position:relative;">' + foundPhotoHtml
+      +     '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(30,30,30,0.8);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:3px 0;">&#128247; YOU UPLOADED</div>'
+      +   '</div>'
+      +   '<div style="position:relative;">' + missingPhotoHtml
+      +     '<div style="position:absolute;bottom:0;left:0;right:0;background:' + (confirmed ? 'rgba(27,94,32,0.9)' : 'rgba(21,101,192,0.88)') + ';color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:3px 0;">' + (confirmed ? '✅ MISSING PERSON' : '🔍 MISSING PERSON') + ' (' + m.case_id + ')</div>'
+      +   '</div>'
+      + '</div>'
+      + '<div style="padding:9px 12px;font-size:.82rem;color:#333;line-height:1.8;">'
+      +   '<b>Name:</b> ' + m.name + priorityBadge + '<br>'
+      +   '<b>Age:</b> ' + m.age + ' &nbsp;|&nbsp; <b>Gender:</b> ' + m.gender + '<br>'
+      +   '<b>Last seen:</b> ' + m.location + '<br>'
+      +   '<b>Status:</b> <span style="color:' + statusColor + ';font-weight:700;">' + statusText + '</span>'
+      +   '<br><span style="font-size:.72rem;color:#999;">' + (m.reported_at || '') + '</span>'
+      + '</div>'
+      + (confirmed
+          ? '<div style="margin:0 10px 10px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:8px 12px;font-size:.8rem;color:#1b5e20;font-weight:600;">&#128161; Proceed to submit below — the system will automatically match and notify the family via SMS!</div>'
+          : '<a href="/cases" target="_blank" style="display:block;margin:0 10px 10px;background:#1565c0;color:#fff;text-align:center;padding:7px;border-radius:7px;font-size:.8rem;font-weight:700;text-decoration:none;">&#128269; View Missing Cases &#8594;</a>')
+      + '</div>';
+  }
+
+  function runLiveMatch(file) {
+    var age    = (document.querySelector('[name="age"]') || {}).value || '';
+    var gender = (document.querySelector('[name="gender"]') || {}).value || '';
+
+    showPanel('matchScanning');
+    setTimeout(function(){ document.getElementById('scanBar').style.width = '85%'; }, 50);
+
+    var fd = new FormData();
+    fd.append('photo', file);
+    fd.append('age', age);
+    fd.append('gender', gender);
+    fd.append('original_filename', file.name);
+
+    fetch('/api/check-found-match', { method: 'POST', body: fd })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        document.getElementById('scanBar').style.width = '100%';
+        setTimeout(function(){
+          var matches = data.matches || [];
+          if (matches.length === 0) {
+            // Check if age was entered - if not, show generic no match
+            var ageVal = (document.querySelector('[name="age"]') || {}).value || '';
+            var genderVal = (document.querySelector('[name="gender"]') || {}).value || '';
+            var noMatchDiv = document.getElementById('matchNone');
+            if (!ageVal || !genderVal) {
+              noMatchDiv.querySelector('div:last-child').innerHTML = 'Please enter the <b>estimated age</b> and <b>gender</b> above so AI can search the missing persons database.';
+            } else {
+              noMatchDiv.querySelector('div:last-child').innerHTML = 'No matching missing report found for this age/gender. Please <b>proceed to submit</b> this Found report — the AI will keep monitoring automatically and alert the family if a match is registered later.';
+            }
+            showPanel('matchNone');
+          } else {
+            showPanel('matchFound');
+            var hasConfirmed = matches.some(function(m){ return m.confirmed; });
+            var hdr = document.querySelector('#matchFound > div:first-child');
+            if (hdr) {
+              if (hasConfirmed) {
+                hdr.innerHTML = '<div style="font-size:1.1rem;font-weight:800;color:#1b5e20;">&#9989; This person is already reported as MISSING!</div><div style="font-size:.85rem;color:#2e7d32;margin-top:.3rem;">Contact police immediately with the Case ID. Still submit this report to complete the official record.</div>';
+              } else {
+                hdr.innerHTML = '<div style="font-size:1.05rem;font-weight:800;color:#e67e22;">&#128269; Possible Match(es) — Same Age &amp; Gender</div><div style="font-size:.83rem;color:#b7600a;margin-top:.3rem;">Compare the photos carefully. If any match, contact police immediately. Otherwise proceed to submit.</div>';
+              }
+            }
+            var html = '';
+            matches.forEach(function(m){ html += buildMissingCard(m); });
+            document.getElementById('matchCards').innerHTML = html;
+          }
+        }, 400);
+      })
+      .catch(function(){ hideMatchPanel(); });
+  }
+
+  // Live preview when file uploaded
+  document.getElementById('found_photo_upload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      _foundPhotoDataUrl = url;
+      document.getElementById('preview-img').src = url;
+      document.getElementById('upload-preview').style.display = 'block';
+      clearDefaultSelection();
+      runLiveMatch(file);
+    }
+  });
+
+  // Re-run if age/gender changes after photo selected (debounced)
+  var _matchDebounceTimer = null;
+  function debouncedRunMatch() {
+    clearTimeout(_matchDebounceTimer);
+    _matchDebounceTimer = setTimeout(function() {
+      var inp = document.getElementById('found_photo_upload');
+      if (inp && inp.files && inp.files[0]) {
+        runLiveMatch(inp.files[0]);
+      } else if (selectedDefault) {
+        fetch('/static/images/default_found_' + selectedDefault + '.jpg')
+          .then(function(r){ return r.blob(); })
+          .then(function(blob){
+            var fakeFile = new File([blob], 'default_found_' + selectedDefault + '.jpg', {type:'image/jpeg'});
+            runLiveMatch(fakeFile);
+          });
+      }
+    }, 600);
+  }
+  ['[name="age"]','[name="gender"]'].forEach(function(sel){
+    var el = document.querySelector(sel);
+    if (el) {
+      el.addEventListener('change', debouncedRunMatch);
+      el.addEventListener('input',  debouncedRunMatch);
+    }
+  });
+
+  function selectDefault(radio, idx) {
+    document.getElementById('found_photo_upload').value = '';
+    document.getElementById('upload-preview').style.display = 'none';
+    clearDefaultSelection();
+    selectedDefault = idx;
+    const card = document.getElementById('default-card-' + idx);
+    card.style.border = '2.5px solid #185FA5';
+    card.style.boxShadow = '0 0 0 3px rgba(24,95,165,0.2)';
+    document.getElementById('default-selected-msg').style.display = 'block';
+    // Fetch the default image as blob and run match
+    fetch('/static/images/default_found_' + idx + '.jpg')
+      .then(function(r){ return r.blob(); })
+      .then(function(blob){
+        var fakeFile = new File([blob], 'default_found_' + idx + '.jpg', {type: 'image/jpeg'});
+        _foundPhotoDataUrl = '/static/images/default_found_' + idx + '.jpg';
+        runLiveMatch(fakeFile);
+      })
+      .catch(function(){ hideMatchPanel(); });
+  }
+
+  function clearDefaultSelection() {
+    for (var i = 1; i <= 6; i++) {
+      const card = document.getElementById('default-card-' + i);
+      if (card) { card.style.border = '2.5px solid #ddd'; card.style.boxShadow = 'none'; }
+    }
+    document.getElementById('default-selected-msg').style.display = 'none';
+    selectedDefault = null;
+  }
+</script>
+{% endblock %}
