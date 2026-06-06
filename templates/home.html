@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='home';</script>
+
+<section class="hero">
+  <!-- Hero illustration icons row -->
+  <div class="hero-icons-row">
+    <div class="hero-icon-item">🏠</div>
+    <div class="hero-icon-item">👨‍👩‍👧</div>
+    <div class="hero-icon-item">🤝</div>
+    <div class="hero-icon-item">🔍</div>
+    <div class="hero-icon-item">💛</div>
+  </div>
+  <h1>Every Child Deserves to<br>Come <span class="highlight">Home Safe.</span></h1>
+  <div class="hero-btns">
+    <a href="/report-missing" class="btn-primary">🚨 Report Missing Person</a>
+    <a href="/report-found"   class="btn-outline">🙌 I Found Someone</a>
+    <a href="/police"         class="btn-police">👮 Police Dashboard</a>
+  </div>
+  {% if not session.user_email %}
+  <div style="margin-top:1.8rem;font-size:13px;color:rgba(255,255,255,.55);position:relative;">
+    <a href="/register" style="color:var(--gold);text-decoration:none;font-weight:700;">✨ Register free</a>
+    &nbsp;or&nbsp;
+    <a href="/login" style="color:var(--gold);text-decoration:none;font-weight:700;">🔐 Login</a>
+    &nbsp;to file complaints
+  </div>
+  {% else %}
+  <div style="margin-top:1.8rem;font-size:13px;color:rgba(255,255,255,.55);position:relative;">
+    👋 Welcome back, <strong style="color:var(--gold);">{{ session.user_name }}</strong>! You are logged in.
+  </div>
+  {% endif %}
+</section>
+
+<section class="stats-bar">
+  <div class="stat"><div class="stat-num">{{ total_resolved }}</div><div class="stat-label">✅ Persons Reunited</div></div>
+  <div class="stat"><div class="stat-num">{{ total_missing }}</div><div class="stat-label">🔴 Missing Reports</div></div>
+  <div class="stat"><div class="stat-num">{{ total_found }}</div><div class="stat-label">🟢 Found Reports</div></div>
+  <div class="stat"><div class="stat-num">{{ total_missing + total_found + total_resolved }}</div><div class="stat-label">📋 Total Cases Filed</div></div>
+</section>
+
+{% if police_alerts %}
+<section class="section">
+  <h2 class="section-title">🚔 Police Station Notifications</h2>
+  <p class="section-sub">Alerts automatically sent to police when missing reports were filed — visible to everyone</p>
+  {% for alert in police_alerts %}
+  <div class="police-notif-card">
+    <div class="police-notif-icon">📱</div>
+    <div class="police-notif-body">
+      <div class="police-notif-title">Alert sent → Local Police Station — Missing Persons Unit</div>
+      <div class="police-notif-msg">{{ alert.message }}</div>
+      <div class="police-notif-meta">
+        <span>🕐 {{ alert.sent_at }}</span>
+        {% if alert.case_id %}<span>📋 {{ alert.case_id }}</span>{% endif %}
+        <span class="notif-delivered">✅ Delivered to Police</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if recent_alerts %}
+<section class="section">
+  <h2 class="section-title">🚨 Live Alerts</h2>
+  <p class="section-sub">Real-time missing person alerts requiring immediate attention</p>
+  {% for p in recent_alerts %}
+  <div class="alert-banner alert-{{ p.color }}" style="display:flex;align-items:center;gap:12px;">
+    <div class="alert-dot dot-{{ p.color }}"></div>
+    {% if p.child_photo %}
+      <img src="/uploads/{{ p.child_photo }}" alt="{{ p.name }}" style="width:40px;height:40px;object-fit:cover;border-radius:10px;border:2px solid rgba(255,255,255,0.4);flex-shrink:0;">
+    {% endif %}
+    <div style="flex:1;">
+      <strong>{{ p.priority }}</strong> — {{ p.name }}, Age {{ p.age }}
+      &nbsp;·&nbsp; 📍 Last seen: <strong>{{ p.location }}</strong>
+      &nbsp;·&nbsp; Case <strong>#{{ p.case_id }}</strong>
+      &nbsp;·&nbsp; <strong>{{ p.escalation }}</strong>
+    </div>
+    <a href="/track/{{ p.case_id }}" class="track-link">Track →</a>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section class="section">
+  <h2 class="section-title">📋 All Cases — Live Status</h2>
+  <p class="section-sub">Everyone can see the current status of every reported case in real time</p>
+  {% if all_cases %}
+  <div style="overflow-x:auto;">
+    <table class="status-table">
+      <thead>
+        <tr>
+          <th>Case ID</th><th>Name</th><th>Age</th><th>Last Seen</th>
+          <th>Reported</th><th>Priority</th><th>Escalation</th><th>Status</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in all_cases %}
+        <tr>
+          <td><strong>{{ p.case_id }}</strong></td>
+          <td>{{ p.name }}</td>
+          <td>{{ p.age }}</td>
+          <td>{{ p.location }}</td>
+          <td style="font-size:11px;color:var(--text-soft);">{{ p.reported_at }}</td>
+          <td><span class="status-pill pill-{{ p.priority|lower }}">{{ p.priority }}</span></td>
+          <td><span class="status-pill pill-esc-{{ p.escalation|lower }}">{{ p.escalation }}</span></td>
+          <td>
+            {% if p.status == "Resolved" %}
+              <span class="case-status-badge status-resolved">✅ Resolved</span>
+            {% elif "Match" in p.status %}
+              <span class="case-status-badge status-matched">🔵 Match Found</span>
+            {% else %}
+              <span class="case-status-badge status-ongoing">🔴 Ongoing</span>
+            {% endif %}
+          </td>
+          <td><a href="/track/{{ p.case_id }}" class="track-link">Track →</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty-msg">No cases filed yet.</p>
+  {% endif %}
+</section>
+
+{% if cases_list %}
+<section class="section">
+  <h2 class="section-title">🔗 Matched & Resolved Cases</h2>
+  <p class="section-sub">AI-matched and police-resolved reunification cases — visible to all</p>
+  {% for case in cases_list %}
+  <div class="match-status-card {{ 'msc-resolved' if case.status=='Resolved' else 'msc-matched' }}">
+    <div class="msc-icon">{{ '✅' if case.status=='Resolved' else '🔵' }}</div>
+    <div class="msc-body">
+      <div class="msc-name">{{ case.missing.name }}</div>
+      <div class="msc-detail">Case #{{ case.case_id }} · Filed: {{ case.created_at }}</div>
+      {% if case.resolved_at %}<div class="msc-detail">✅ Resolved on: <strong>{{ case.resolved_at }}</strong></div>{% endif %}
+    </div>
+    <div>
+      {% if case.status == "Resolved" %}
+        <span class="case-status-badge status-resolved">✅ Resolved</span>
+      {% elif "Match" in case.status %}
+        <span class="case-status-badge status-matched">🔵 Match Found — Ongoing</span>
+      {% else %}
+        <span class="case-status-badge status-ongoing">🔴 Ongoing</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section class="section">
+  <h2 class="section-title">🔐 3-Level Verification System</h2>
+  <p class="section-sub">Every report is verified through three layers to prevent misuse and ensure trustworthy data</p>
+  <div class="cards-grid">
+    <div class="feature-card"><div class="feature-icon fi-blue">📧</div><h3>Level 1 — Email Login</h3><p>Register and login with email. All complaints are linked to a verified account. No anonymous filing.</p></div>
+    <div class="feature-card"><div class="feature-icon fi-yellow">📄</div><h3>Level 2 — Birth Certificate</h3><p>Upload birth certificate. Registration number verified against govt CRS database. Proves family relationship.</p></div>
+    <div class="feature-card"><div class="feature-icon fi-teal">🔐</div><h3>Level 3 — Aadhaar OTP</h3><p>Both missing person's and reporter's Aadhaar required. OTP sent to Aadhaar-linked mobile for final verification.</p></div>
+    <div class="feature-card"><div class="feature-icon fi-purple">🤝</div><h3>AI Matching</h3><p>AI automatically matches missing and found reports by age, gender and location in milliseconds.</p></div>
+    <div class="feature-card"><div class="feature-icon fi-orange">📡</div><h3>Auto Escalation</h3><p>24hrs→District. 48hrs→State. 72hrs→NCRB National. Fully automatic with SMS alerts at each stage.</p></div>
+    <div class="feature-card"><div class="feature-icon fi-green">👮</div><h3>Police Verification</h3><p>Physical ID + original documents verified at police station before reunion. Final security layer.</p></div>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">📡 Escalation — Who Gets Notified</h2>
+  <p class="section-sub">Automatic escalation ensures no case is ever overlooked</p>
+  <div class="escalation-steps">
+    <div class="esc-step esc-local"><div class="esc-time">⏱ 0–24 hrs</div><div class="esc-title">LOCAL</div><div class="esc-desc">SHO + Duty Officer</div></div>
+    <div class="esc-arrow">→</div>
+    <div class="esc-step esc-district"><div class="esc-time">⏱ 24–48 hrs</div><div class="esc-title">DISTRICT</div><div class="esc-desc">District SP + All SHOs</div></div>
+    <div class="esc-arrow">→</div>
+    <div class="esc-step esc-state"><div class="esc-time">⏱ 48–72 hrs</div><div class="esc-title">STATE</div><div class="esc-desc">IG + State Bureau</div></div>
+    <div class="esc-arrow">→</div>
+    <div class="esc-step esc-national"><div class="esc-time">⏱ 72+ hrs</div><div class="esc-title">🇮🇳 NATIONAL</div><div class="esc-desc">DGP + NCRB + CBI</div></div>
+  </div>
+</section>
+
+{% endblock %}

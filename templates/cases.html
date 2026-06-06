@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='cases';</script>
+<section class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;">
+    <div><h2 class="section-title">📋 All Cases</h2><p class="section-sub">Live status of all missing, found and matched reports — visible to everyone</p></div>
+    <form action="/search" method="GET" style="display:flex;gap:8px;">
+      <input class="search-input" type="text" name="q" placeholder="Search name or case ID...">
+      <button type="submit" class="btn-primary" style="padding:8px 16px;">Search</button>
+    </form>
+  </div>
+
+  <div class="tab-group">
+    <button class="tab active" onclick="showTab('missing-tab',this)">🔴 Missing ({{ missing|length }})</button>
+    <button class="tab" onclick="showTab('found-tab',this)">🟢 Found ({{ found|length }})</button>
+    <button class="tab" onclick="showTab('matched-tab',this)">🔗 Matched/Resolved ({{ cases|length }})</button>
+  </div>
+
+  <!-- Missing Tab -->
+  <div id="missing-tab" class="tab-content active">
+    {% if missing %}{% for p in missing %}
+    <div class="case-card border-{{ p.color }}">
+      <div class="case-avatar">
+        {% if p.child_photo %}
+          <img src="/uploads/{{ p.child_photo }}" alt="{{ p.name }}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #6dbf47;">
+        {% else %}👤{% endif %}
+      </div>
+      <div class="case-info">
+        <div class="case-name">{{ p.name }}</div>
+        <div class="case-detail">Age {{ p.age }} · {{ p.gender }} · {{ p.location }} · Reported by: {{ p.relation }} ({{ p.reporter_email }})</div>
+        <div class="case-id">Case #{{ p.case_id }} · {{ p.reported_at }} · Aadhaar: XXXX-{{ p.missing_aadhaar }} · Cert: {{ p.birth_cert_reg }} &nbsp;<a href="/track/{{ p.case_id }}" class="track-link">Track →</a></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        <span class="badge badge-priority-{{ p.priority|lower }}">{{ p.priority }}</span>
+        <span class="badge badge-esc-{{ p.escalation|lower }}">{{ p.escalation }}</span>
+        {% if p.status == "Resolved" %}
+          <span class="case-status-badge status-resolved">✅ Resolved</span>
+        {% elif "Match" in p.status %}
+          <span class="case-status-badge status-matched">🔵 Match Found</span>
+        {% else %}
+          <span class="case-status-badge status-ongoing">🔴 Ongoing</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}{% else %}<p class="empty-msg">No missing reports yet.</p>{% endif %}
+  </div>
+
+  <!-- Found Tab -->
+  <div id="found-tab" class="tab-content">
+    {% if found %}{% for p in found %}
+    <div class="case-card border-blue">
+      <div class="case-avatar">👤</div>
+      <div class="case-info">
+        <div class="case-name">Unknown {{ p.gender }}, Age ~{{ p.age }}</div>
+        <div class="case-detail">Found at: {{ p.location }} · Condition: {{ p.condition }}</div>
+        <div class="case-id">Case #{{ p.case_id }} · {{ p.reported_at }} · Reporter: {{ p.reporter_email }}</div>
+      </div>
+      <span class="badge badge-found">🟢 Found</span>
+    </div>
+    {% endfor %}{% else %}<p class="empty-msg">No found reports yet.</p>{% endif %}
+  </div>
+
+  <!-- Matched/Resolved Tab -->
+  <div id="matched-tab" class="tab-content">
+    {% if cases %}{% for case in cases %}
+    <div class="match-status-card {{ 'msc-resolved' if case.status=='Resolved' else 'msc-matched' }}">
+      <div class="msc-icon">{{ '✅' if case.status=='Resolved' else '🔵' }}</div>
+      <div class="msc-body">
+        <div class="msc-name">{{ case.missing.name }} ↔ Found Person #{{ case.found.case_id }}</div>
+        <div class="msc-detail">Missing: {{ case.missing.location }} · Found: {{ case.found.location }}</div>
+        <div class="msc-detail">Case #{{ case.case_id }} · Filed: {{ case.created_at }}</div>
+        {% if case.resolved_at %}<div class="msc-detail">✅ Resolved on: <strong>{{ case.resolved_at }}</strong></div>{% endif %}
+        <a href="/track/{{ case.missing.case_id }}" class="track-link" style="font-size:12px;">Track →</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        {% if case.status == "Resolved" %}
+          <span class="case-status-badge status-resolved">✅ Resolved</span>
+        {% elif "Match" in case.status %}
+          <span class="case-status-badge status-matched">🔵 Match Found — Ongoing</span>
+        {% else %}
+          <span class="case-status-badge status-ongoing">🔴 Ongoing</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}{% else %}<p class="empty-msg">No matched cases yet.</p>{% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='report_missing';</script>
+<section class="section">
+  <div class="form-wrap">
+    <div class="form-card">
+      <h2 class="form-title">Report a Missing Person</h2>
+      <p class="form-sub">3-level verification: Email Login + Aadhaar OTP + Birth Certificate. Prevents all fake complaints.</p>
+
+      <!-- VERIFICATION STEPS -->
+      <div class="steps-bar">
+        <div class="step step-done">✅ Step 1: Email Login</div>
+        <div class="step step-active">📋 Step 2: Fill Details & Upload Photo</div>
+        <div class="step step-pending">🔐 Step 3: Aadhaar OTP</div>
+      </div>
+
+      <form method="POST" action="/report-missing" enctype="multipart/form-data">
+
+        <!-- MISSING PERSON DETAILS -->
+        <div class="form-section-title">👤 Missing Person Details</div>
+        <div class="form-row">
+          <div class="form-group"><label>Full Name *</label><input type="text" name="name" placeholder="Missing person's full name" required></div>
+          <div class="form-group"><label>Age *</label><input type="number" name="age" placeholder="Age (any age)" min="1" max="120" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Gender *</label>
+            <select name="gender" required><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select>
+          </div>
+          <div class="form-group"><label>Date Last Seen *</label><input type="date" name="date" required></div>
+        </div>
+        <div class="form-group"><label>Last Seen Location *</label><input type="text" name="location" placeholder="Area, landmark, city" required></div>
+        <div class="form-group"><label>Physical Description</label><input type="text" name="desc" placeholder="Height, skin tone, hair colour, clothing worn"></div>
+        <div class="form-group">
+          <label>Missing Person's Aadhaar Number *</label>
+          <input type="text" name="missing_aadhaar" placeholder="XXXX XXXX XXXX" maxlength="14" required>
+          <div class="field-note">Used to identify the missing person. Police verify this at reunion.</div>
+        </div>
+
+        <!-- CHILD PHOTO UPLOAD -->
+        <div class="form-section-title">📷 Missing Child Photo</div>
+        <div class="form-group">
+          <label>Upload Child's Recent Photo * (JPG, PNG, WEBP)</label>
+          <div class="photo-upload-box" id="photoUploadBox">
+            <input type="file" name="child_photo" id="childPhotoInput" accept=".jpg,.jpeg,.png,.webp" required
+              style="display:none;" onchange="previewPhoto(this)">
+            <div id="photoPlaceholder" onclick="document.getElementById('childPhotoInput').click()" style="cursor:pointer;">
+              <div style="font-size:3rem;">📸</div>
+              <div style="font-size:1rem;font-weight:600;color:var(--teal);margin-top:8px;">Click to Upload Child Photo</div>
+              <div style="font-size:0.82rem;color:#888;margin-top:4px;">JPG, PNG or WEBP • Max 5MB • Recent clear photo preferred</div>
+            </div>
+            <div id="photoPreviewWrap" style="display:none;text-align:center;">
+              <img id="photoPreview" src="" alt="Child Photo Preview"
+                style="max-width:220px;max-height:220px;border-radius:12px;border:3px solid #6dbf47;box-shadow:0 4px 16px rgba(0,0,0,0.15);margin-bottom:10px;">
+              <div>
+                <span id="photoFileName" style="font-size:0.85rem;color:#555;"></span>
+                <button type="button" onclick="removePhoto()" style="margin-left:12px;background:#e74c3c;color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.82rem;">✕ Remove</button>
+              </div>
+            </div>
+          </div>
+          <div class="field-note">This photo will be shared with police and used in alerts to help locate the missing child faster.</div>
+        </div>
+
+        <!-- LIVE AI MATCH PANEL -->
+        <div id="liveMatchPanel" style="display:none;margin-bottom:1.4rem;">
+          <div id="matchScanning" style="display:none;background:linear-gradient(135deg,#e8f4ff,#dbeeff);border:2px solid #4a90e2;border-radius:14px;padding:1.2rem 1.4rem;text-align:center;">
+            <div style="font-size:2rem;">&#128269;</div>
+            <div style="font-weight:700;color:#1a4a8a;margin-top:.4rem;">Scanning Found Persons Database...</div>
+            <div style="font-size:.82rem;color:#4a70aa;margin-top:.3rem;">AI is comparing your photo against all reported found persons</div>
+            <div style="margin-top:.8rem;"><div style="display:inline-block;width:180px;height:6px;background:#c0d8f5;border-radius:4px;overflow:hidden;"><div id="scanBar" style="width:0%;height:100%;background:linear-gradient(90deg,#4a90e2,#0e7a6e);border-radius:4px;transition:width 1.5s ease;"></div></div></div>
+          </div>
+          <div id="matchNone" style="display:none;background:linear-gradient(135deg,#f0fff4,#e8fdf0);border:2px solid #4caf50;border-radius:14px;padding:1.1rem 1.4rem;">
+            <div style="font-weight:700;color:#2e7d32;font-size:1rem;">&#10003; No Immediate Match Found</div>
+            <div style="font-size:.85rem;color:#388e3c;margin-top:.3rem;">No currently listed found person closely matches this photo, age and gender. Proceed to register — the AI will keep monitoring automatically.</div>
+          </div>
+          <div id="matchFound" style="display:none;">
+            <div style="background:linear-gradient(135deg,#fff3e0,#ffe8cc);border:2.5px solid #ff7043;border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:.9rem;">
+              <div style="font-size:1.05rem;font-weight:800;color:#bf360c;">&#128680; Possible Match(es) Found in Found Persons Database!</div>
+              <div style="font-size:.83rem;color:#e64a19;margin-top:.25rem;">Check the cards below carefully. If any match, contact police with the Found Case ID immediately. You can still continue submitting this missing report.</div>
+            </div>
+            <div id="matchCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;"></div>
+          </div>
+        </div>
+
+        <!-- BIRTH CERTIFICATE -->
+        <div class="form-section-title">📄 Birth Certificate (Proves Family Relationship)</div>
+        <div class="form-group">
+          <label>Birth Certificate Registration Number *</label>
+          <input type="text" name="birth_cert_reg" placeholder="e.g. TN/CHN/2015/123456" required>
+          <div class="field-note">This number is verified against the government CRS database to check authenticity.</div>
+        </div>
+        <div class="form-group">
+          <label>Upload Birth Certificate * (JPG, PNG or PDF)</label>
+          <input type="file" name="birth_cert" accept=".jpg,.jpeg,.png,.pdf" required>
+          <div class="field-note">Your name on the birth certificate must match your Aadhaar name. Fake certificates will be rejected.</div>
+        </div>
+
+        <!-- REPORTER DETAILS -->
+        <div class="form-section-title">👨 Your Details (Reporter)</div>
+        <div class="form-group"><label>Logged in as</label>
+          <input type="text" value="{{ session.user_name }} ({{ session.user_email }})" disabled style="background:#EAF3DE;color:var(--teal);">
+        </div>
+        <div class="form-group"><label>Your Relation to Missing Person *</label>
+          <select name="relation" required>
+            <option value="">Select relation</option>
+            <option>Parent</option><option>Spouse</option><option>Sibling</option>
+            <option>Child</option><option>Friend</option><option>Relative</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Your Aadhaar Number * (OTP will be sent here)</label>
+          <input type="text" name="reporter_aadhaar" placeholder="XXXX XXXX XXXX" maxlength="14" required>
+          <div class="field-note">Your Aadhaar-linked mobile will receive the 6-digit OTP for verification.</div>
+        </div>
+        <div class="form-group">
+          <label>Your Mobile Number * (SMS updates sent here)</label>
+          <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX" required>
+        </div>
+
+        <div class="info-box">
+          🔐 After clicking submit:<br>
+          1️⃣ Birth certificate registration number verified against govt database<br>
+          2️⃣ OTP sent to your Aadhaar-linked mobile<br>
+          3️⃣ Enter OTP on next page to confirm<br>
+          4️⃣ Case registered + Police alerted instantly!
+        </div>
+        <button type="submit" class="submit-btn">Send OTP &amp; Proceed to Verification 🔐</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<style>
+.photo-upload-box {
+  border: 2.5px dashed #6dbf47;
+  border-radius: 14px;
+  padding: 28px 20px;
+  background: var(--off-white);
+  transition: border-color 0.2s, background 0.2s;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-upload-box:hover {
+  border-color: var(--teal);
+  background: rgba(14,122,110,.08);
+}
+</style>
+
+<script>
+// ── Live photo match check ────────────────────────────────
+function showPanel(id) {
+  ['matchScanning','matchNone','matchFound'].forEach(function(p) {
+    document.getElementById(p).style.display = p === id ? 'block' : 'none';
+  });
+  document.getElementById('liveMatchPanel').style.display = 'block';
+}
+
+function hideMatchPanel() {
+  document.getElementById('liveMatchPanel').style.display = 'none';
+}
+
+// missingPhotoDataUrl is set when user selects their photo
+var _missingPhotoDataUrl = '';
+
+function buildMatchCard(m) {
+  var foundSrc   = m.found_photo ? '/uploads/' + m.found_photo : '';
+  var missingSrc = _missingPhotoDataUrl || '';
+  var matchType  = m.match_type || 'exact';
+
+  var missingPhotoHtml = missingSrc
+    ? '<img src="' + missingSrc + '" alt="Missing" style="width:100%;height:130px;object-fit:cover;">'
+    : '<div style="width:100%;height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f5f5f5;color:#aaa;font-size:1.6rem;">&#128100;<div style="font-size:.65rem;margin-top:4px;">No photo</div></div>';
+
+  var foundPhotoHtml = foundSrc
+    ? '<img src="' + foundSrc + '" alt="Found" style="width:100%;height:130px;object-fit:cover;" onerror="this.parentNode.innerHTML=\'<div style=&quot;width:100%;height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f5f5f5;color:#aaa;font-size:1.6rem;&quot;>&#128100;<div style=&quot;font-size:.65rem;margin-top:4px;&quot;>No photo</div></div>\'">'
+    : '<div style="width:100%;height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f5f5f5;color:#aaa;font-size:1.6rem;">&#128100;<div style="font-size:.65rem;margin-top:4px;">No photo</div></div>';
+
+  var nameRow = m.found_name ? '<b>Name given:</b> ' + m.found_name + '<br>' : '';
+
+  // Style config based on match type
+  var cfg = {
+    exact:        { border:'#1b5e20', headerBg:'linear-gradient(90deg,#1b5e20,#2e7d32)', badgeBg:'#e8f5e9', badgeColor:'#1b5e20',
+                    header:'&#9989; ALREADY FOUND — This exact image is already in the Found Database!',
+                    badge:'&#9989; CONFIRMED MATCH — Same image file detected' },
+    image_similar:{ border:'#1565c0', headerBg:'linear-gradient(90deg,#1565c0,#1976d2)', badgeBg:'#e3f2fd', badgeColor:'#1565c0',
+                    header:'&#128269; HIGH SIMILARITY — This image closely matches a found person!',
+                    badge:'&#128201; Image similarity match (' + m.score + '%) — Please verify visually' },
+    age_gender_only:{ border:'#e65100', headerBg:'linear-gradient(90deg,#bf360c,#e64a19)', badgeBg:'#fff3e0', badgeColor:'#e65100',
+                    header:'&#128270; REFERENCE — Found person with same age &amp; gender',
+                    badge:'&#128270; Same age &amp; gender only — Compare photos carefully' }
+  };
+  var c = cfg[matchType] || cfg.exact;
+
+  return '<div style="background:#fff;border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,0.15);overflow:hidden;border:2.5px solid ' + c.border + ';margin-bottom:8px;">'
+    + '<div style="background:' + c.headerBg + ';color:#fff;text-align:center;padding:8px;font-size:.85rem;font-weight:800;letter-spacing:.3px;">' + c.header + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;">'
+    +   '<div style="position:relative;">' + missingPhotoHtml
+    +     '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,80,50,0.85);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:3px 0;">&#128246; YOU UPLOADED</div>'
+    +   '</div>'
+    +   '<div style="position:relative;">' + foundPhotoHtml
+    +     '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(21,101,192,0.85);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:3px 0;">&#128205; FOUND (' + m.case_id + ')</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div style="padding:6px 12px;background:' + c.badgeBg + ';border-bottom:1px solid #eee;">'
+    +   '<span style="font-weight:800;font-size:.8rem;color:' + c.badgeColor + ';">' + c.badge + '</span>'
+    + '</div>'
+    + '<div style="padding:9px 12px;font-size:.8rem;color:#333;line-height:1.7;">'
+    +   nameRow
+    +   '<b>Age:</b> ' + m.age + ' &nbsp;|&nbsp; <b>Gender:</b> ' + m.gender + '<br>'
+    +   '<b>Found at:</b> ' + m.location + '<br>'
+    +   '<b>Condition:</b> ' + m.condition
+    +   (m.desc ? '<br>' + m.desc : '')
+    +   '<br><span style="font-size:.72rem;color:#999;">' + (m.reported_at || '') + '</span>'
+    + '</div>'
+    + (matchType !== 'age_gender_only'
+      ? '<div style="padding:6px 12px 10px;background:#f9fbe7;font-size:.78rem;color:#33691e;font-weight:600;">&#9888;&#65039; This person appears to already be reported as Found. You may still submit if this is a different person.</div>'
+      : '<div style="padding:6px 12px 10px;background:#fff8e1;font-size:.78rem;color:#e65100;">&#128270; Only age &amp; gender match — photos may differ. Compare carefully before deciding.</div>')
+    + '<a href="/found-gallery" target="_blank" style="display:block;margin:0 10px 10px;background:#0e7a6e;color:#fff;text-align:center;padding:7px;border-radius:7px;font-size:.8rem;font-weight:700;text-decoration:none;">View Full Found Gallery &#8594;</a>'
+    + '</div>';
+}
+
+function buildCautionBanner(cautions) {
+  // Simple info banner — just same age/gender, NOT the same image
+  var count = cautions.length;
+  var genders = [...new Set(cautions.map(function(c){ return c.gender; }))].join('/');
+  var ages = cautions.map(function(c){ return c.age; }).join(', ');
+  return '<div style="background:#fff8e1;border:2px solid #f9a825;border-radius:10px;padding:12px 14px;margin-bottom:6px;">'
+    + '<div style="font-weight:800;font-size:.88rem;color:#e65100;margin-bottom:4px;">&#9888;&#65039; CAUTION — Similar Age &amp; Gender Records Exist</div>'
+    + '<div style="font-size:.8rem;color:#5d4037;line-height:1.6;">'
+    +   'Found database has <b>' + count + ' person(s)</b> with similar age (' + ages + ') and gender (' + genders + ').'
+    + '<br>This does <b>NOT</b> mean it is the same person — the photos do not match.'
+    + '<br>You may <a href="/found-gallery" target="_blank" style="color:#1565c0;font-weight:700;">check the Found Gallery</a> manually if needed.'
+    + '</div>'
+    + '</div>';
+}
+
+function runLiveMatch(file) {
+  var age    = (document.querySelector('[name="age"]') || {}).value || '';
+  var gender = (document.querySelector('[name="gender"]') || {}).value || '';
+  // Always run — photo comparison works even without age/gender
+
+  showPanel('matchScanning');
+  setTimeout(function() { document.getElementById('scanBar').style.width = '85%'; }, 50);
+
+  var fd = new FormData();
+  fd.append('photo', file);
+  fd.append('age', age);
+  fd.append('gender', gender);
+  fd.append('original_filename', file.name);
+
+  fetch('/api/check-photo-match', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById('scanBar').style.width = '100%';
+      setTimeout(function() {
+        var matches = data.matches || [];
+        var cautions = data.age_gender_cautions || [];
+        var allCards = matches.concat(cautions);
+
+        if (allCards.length === 0) {
+          showPanel('matchNone');
+        } else {
+          showPanel('matchFound');
+          var hasExact    = matches.some(function(m){ return m.match_type === 'exact'; });
+          var hasSimilar  = matches.some(function(m){ return m.match_type === 'image_similar'; });
+          var hasCautions = cautions.length > 0;
+
+          var hdr = document.querySelector('#matchFound > div:first-child');
+          if (hdr) {
+            if (hasExact) {
+              hdr.innerHTML = '<div style="font-size:1.05rem;font-weight:800;color:#1b5e20;">&#9989; This photo is ALREADY in the Found Database! This child has already been reported as found.</div>'
+                + '<div style="font-size:.83rem;color:#2e7d32;margin-top:.25rem;">You can still submit this report if you believe it is a different person, but please verify first.</div>';
+            } else if (hasSimilar) {
+              hdr.innerHTML = '<div style="font-size:1.05rem;font-weight:800;color:#1565c0;">&#128269; Very Similar Photo Found — Please Verify</div>'
+                + '<div style="font-size:.83rem;color:#1565c0;margin-top:.25rem;">A closely matching image exists in the Found database. Compare carefully before submitting.</div>';
+            } else {
+              hdr.innerHTML = '<div style="font-size:1rem;font-weight:800;color:#e65100;">&#128270; Found Records with Same Age &amp; Gender</div>'
+                + '<div style="font-size:.83rem;color:#bf360c;margin-top:.25rem;">The photos may differ — these are shown for your reference only. Compare visually and proceed if this is a different person.</div>';
+            }
+          }
+          var html = '';
+          // Show exact/similar matches first, then age/gender reference cards
+          matches.forEach(function(m) { html += buildMatchCard(m); });
+          cautions.forEach(function(m) { html += buildMatchCard(m); });
+          document.getElementById('matchCards').innerHTML = html;
+        }
+      }, 400);
+    })
+    .catch(function() { hideMatchPanel(); });
+}
+
+// ── Preview & match trigger ───────────────────────────────
+function previewPhoto(input) {
+  if (input.files && input.files[0]) {
+    var file = input.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File is too large! Please upload a photo under 5MB.");
+      input.value = "";
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      _missingPhotoDataUrl = e.target.result;   // ← store for match cards
+      document.getElementById('photoPreview').src = e.target.result;
+      document.getElementById('photoFileName').textContent = file.name;
+      document.getElementById('photoPlaceholder').style.display = 'none';
+      document.getElementById('photoPreviewWrap').style.display = 'block';
+      // Trigger live match scan AFTER data URL is ready
+      runLiveMatch(file);
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function removePhoto() {
+  _missingPhotoDataUrl = '';
+  document.getElementById('childPhotoInput').value = "";
+  document.getElementById('photoPreview').src = "";
+  document.getElementById('photoPreviewWrap').style.display = 'none';
+  document.getElementById('photoPlaceholder').style.display = 'block';
+  hideMatchPanel();
+}
+
+// Re-run match if age/gender changes after photo already selected (debounced)
+var _matchDebounceTimer = null;
+function debouncedRunMatch() {
+  clearTimeout(_matchDebounceTimer);
+  _matchDebounceTimer = setTimeout(function() {
+    var inp = document.getElementById('childPhotoInput');
+    if (inp && inp.files && inp.files[0]) runLiveMatch(inp.files[0]);
+  }, 600);
+}
+['[name="age"]','[name="gender"]'].forEach(function(sel) {
+  var el = document.querySelector(sel);
+  if (el) {
+    el.addEventListener('change', debouncedRunMatch);
+    el.addEventListener('input',  debouncedRunMatch);
+  }
+});
+
+// Drag and drop support
+var box = document.getElementById('photoUploadBox');
+box.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  box.style.borderColor = '#3B6D11';
+  box.style.background = '#edfbde';
+});
+box.addEventListener('dragleave', function(e) {
+  box.style.borderColor = '#6dbf47';
+  box.style.background = '#f6fff0';
+});
+box.addEventListener('drop', function(e) {
+  e.preventDefault();
+  box.style.borderColor = '#6dbf47';
+  box.style.background = '#f6fff0';
+  var files = e.dataTransfer.files;
+  if (files.length > 0) {
+    var input = document.getElementById('childPhotoInput');
+    input.files = files;
+    previewPhoto(input);
+  }
+});
+</script>
+{% endblock %}

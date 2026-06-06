@@ -1,0 +1,36 @@
+[
+  {
+    "name": "nirnaya",
+    "email": "nirnaya@gmail.com",
+    "password": "646059111887e70b81980ac9f5bdfcd8e0006d3d433fa6bd1294b768191296cd",
+    "phone": "9029845729",
+    "role": "public",
+    "registered": "04 Apr 2026 12:20"
+  },
+  {
+    "name": "jayanthi",
+    "email": "jayanthi@gmail.com",
+    "password": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "phone": "9010098263",
+    "role": "public",
+    "registered": "04 Apr 2026 12:29"
+  },
+  {
+    "name": "Saiprasanna Yamsani",
+    "email": "sai@gmail.com",
+    "password": "d0c7a42188c5712fbe5c44452ff8819f50c1acb42f8787e2deb2bbcac8d9e3ba",
+    "phone": "+919121763160",
+    "role": "public",
+    "registered": "04 Apr 2026 12:53"
+  },
+  {
+    "name": "MULA NIRNAYA",
+    "email": "2303a51060@sru.edu.in",
+    "password": "646059111887e70b81980ac9f5bdfcd8e0006d3d433fa6bd1294b768191296cd",
+    "phone": "+919121763160",
+    "role": "police",
+    "badge_id": "NIRNAYA@GMAIL.COM",
+    "station": "hnk",
+    "registered": "17 Apr 2026 11:56"
+  }
+]

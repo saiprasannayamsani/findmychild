@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='login';</script>
+<section class="section">
+  <div class="form-wrap">
+    <div class="form-card">
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <div style="font-size:3.5rem;">🚔</div>
+        <h2 class="form-title">Police Officer Login</h2>
+        <p class="form-sub">Secure portal for authorised law enforcement officers</p>
+      </div>
+
+      <div class="info-box" style="background:#FFF3CD;border-color:#FFC107;margin-bottom:1.5rem;">
+        ⚠️ This login is exclusively for registered police officers. Unauthorised access is a criminal offence.
+      </div>
+
+      <form method="POST" action="/police/login">
+        <div class="form-group">
+          <label>Badge / Service ID *</label>
+          <input type="text" name="badge_id" placeholder="e.g. TN-1234-SHO" required style="text-transform:uppercase;letter-spacing:2px;font-weight:700;">
+        </div>
+        <div class="form-group">
+          <label>Password *</label>
+          <input type="password" name="password" placeholder="Your password" required>
+        </div>
+
+        <button type="submit" class="submit-btn" style="background:linear-gradient(135deg,#185FA5,#0D3B6E);">
+          🔐 Login to Police Dashboard
+        </button>
+      </form>
+
+      <div style="text-align:center;margin-top:1.2rem;font-size:14px;color:#666;">
+        New officer? <a href="/police/register" style="color:#185FA5;font-weight:600;">Register here →</a>
+      </div>
+      <div style="text-align:center;margin-top:0.5rem;font-size:14px;color:#666;">
+        Public user? <a href="/login" style="color:#3B6D11;font-weight:600;">Public Login →</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

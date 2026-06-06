@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='police_dashboard';</script>
+<div class="police-header">
+  <div><h2 class="police-title">👮 Police Dashboard</h2><p class="police-sub">Aadhaar verified + Birth Certificate verified complaints only</p></div>
+  <div class="police-stats">
+    <div class="p-stat"><div class="p-num">{{ total_missing }}</div><div class="p-label">Missing</div></div>
+    <div class="p-stat"><div class="p-num">{{ total_found }}</div><div class="p-label">Found</div></div>
+    <div class="p-stat"><div class="p-num">{{ total_resolved }}</div><div class="p-label">Resolved</div></div>
+  </div>
+</div>
+
+<!-- Police Station Alert Info -->
+<div style="background:#E6F1FB;border:1.5px solid #85B7EB;border-radius:12px;padding:14px 20px;margin:0 0 16px 0;display:flex;align-items:center;gap:12px;">
+  <span style="font-size:1.4rem;">🚔</span>
+  <div>
+    <strong style="color:#185FA5;">Police Station Notifications Active</strong>
+    <div style="font-size:13px;color:#378ADD;margin-top:2px;">
+      Every new missing case automatically sends an SMS alert to <strong>Local Police Station – Missing Persons Unit</strong> (Ph: 9100000000).
+      Police can also send direct updates to parents using the <strong>📞 Contact Parent</strong> button on each case.
+    </div>
+  </div>
+</div>
+
+{% if active %}<div class="notif-banner">🔔 <strong>{{ active|length }} ACTIVE</strong> {% set c=active|selectattr('priority','equalto','CRITICAL')|list|length %}{% if c %}&nbsp;|&nbsp; 🚨 <strong>{{ c }} CRITICAL</strong>{% endif %}</div>{% endif %}
+<div class="section">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+    <h3 class="dash-section-title">🔴 Active Cases</h3>
+    <a href="/check-escalation" class="btn-primary" style="font-size:12px;padding:8px 16px;">🔄 Update Escalations</a>
+  </div>
+  {% if active %}{% for p in active %}
+  <div class="police-card police-card-{{ p.color }}">
+    <div class="police-card-left">
+      {% if p.child_photo %}
+        <img src="/uploads/{{ p.child_photo }}" alt="{{ p.name }}"
+          style="width:56px;height:56px;object-fit:cover;border-radius:10px;border:2px solid #6dbf47;margin-bottom:6px;display:block;">
+      {% else %}
+        <div style="width:56px;height:56px;background:#eee;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:6px;">👤</div>
+      {% endif %}
+      <div class="priority-badge priority-{{ p.priority|lower }}">{{ p.priority }}</div>
+      <div class="esc-badge esc-{{ p.escalation|lower }}">{{ p.escalation }}</div>
+    </div>
+    <div class="police-card-info">
+      <div class="police-name">{{ p.name }} <span style="font-size:11px;font-weight:400;color:var(--gray);">({{ p.relation }})</span></div>
+      <div class="police-detail">Age {{ p.age }} · {{ p.gender }} · {{ p.location }}</div>
+      <div class="police-detail">Family: <strong>{{ p.phone }}</strong> · Email: {{ p.reporter_email }}</div>
+      <div class="police-detail">Missing Aadhaar: XXXX-{{ p.missing_aadhaar }} · Birth Cert: {{ p.birth_cert_reg }}</div>
+      <div class="police-detail" style="margin-top:4px;"><strong>Officers:</strong> {% for o in p.officers %}<span class="officer-tag">{{ o }}</span>{% endfor %}</div>
+      <div class="police-case-id">Case #{{ p.case_id }} &nbsp;|&nbsp; <a href="/track/{{ p.case_id }}" class="track-link">Track →</a></div>
+    </div>
+    <div class="police-actions">
+      {% if p.escalation=='NATIONAL' %}<span class="esc-label esc-national-label">🚨 NCRB</span>
+      {% elif p.escalation=='STATE' %}<span class="esc-label esc-state-label">⚠️ STATE</span>
+      {% elif p.escalation=='DISTRICT' %}<span class="esc-label esc-district-label">📢 DISTRICT</span>
+      {% else %}<span class="esc-label esc-local-label">📍 LOCAL</span>{% endif %}
+      <a href="/police/contact-parent/{{ p.case_id }}" class="resolve-btn" style="background:#185FA5;margin-top:6px;">📞 Contact Parent</a>
+    </div>
+  </div>
+  {% endfor %}{% else %}<p class="empty-msg">No active cases. All clear! ✅</p>{% endif %}
+  {% if matched %}
+  <h3 class="dash-section-title" style="margin-top:2rem;">🔵 Match Found — Verify &amp; Resolve</h3>
+  {% for p in matched %}
+  <div class="police-card police-card-blue">
+    <div class="police-card-left"><div class="priority-badge priority-{{ p.priority|lower }}">{{ p.priority }}</div></div>
+    <div class="police-card-info">
+      <div class="police-name">{{ p.name }}</div>
+      <div class="police-detail">Family Phone: <strong>{{ p.phone }}</strong> · Email: {{ p.reporter_email }} — SMS already sent!</div>
+      <div class="police-case-id">Case #{{ p.case_id }}</div>
+    </div>
+    <div class="police-actions">
+      <span class="esc-label" style="background:#E6F1FB;color:#185FA5;border-color:#85B7EB;">🤖 AI Match</span>
+      <a href="/police/contact-parent/{{ p.case_id }}" class="resolve-btn" style="background:#185FA5;margin-top:6px;">📞 Contact Parent</a>
+      <a href="/police/resolve/{{ p.case_id }}" class="resolve-btn" style="margin-top:6px;">✅ Mark Resolved</a>
+    </div>
+  </div>
+  {% endfor %}{% endif %}
+  {% if resolved %}
+  <h3 class="dash-section-title" style="margin-top:2rem;">🟢 Resolved</h3>
+  {% for case in resolved %}
+  <div class="police-card police-card-green">
+    <div class="police-card-left"><div class="esc-badge" style="background:#EAF3DE;color:#3B6D11;">RESOLVED</div></div>
+    <div class="police-card-info">
+      <div class="police-name">{{ case.missing.name }} — Reunited ❤️</div>
+      <div class="police-detail">Family notified via SMS when resolved.</div>
+      <div class="police-case-id">Case #{{ case.case_id }} · {{ case.resolved_at or case.created_at }}</div>
+    </div>
+  </div>
+  {% endfor %}{% endif %}
+  {% if sms_log %}
+  <h3 class="dash-section-title" style="margin-top:2rem;">📱 Recent SMS (Police + Parent Alerts)</h3>
+  {% for sms in sms_log %}
+  <div class="sms-log-card">
+    <div class="sms-log-header"><span class="sms-to">📱 {{ sms.to }}</span><span class="sms-time">{{ sms.sent_at }}</span><span class="sms-status-badge">{{ sms.status }}</span></div>
+    <div class="sms-log-body">{{ sms.message }}</div>
+  </div>
+  {% endfor %}{% endif %}
+</div>
+
+
+{# Found Persons Image Gallery for Police #}
+<div class="section" style="margin-top:2rem;">
+  <h3 class="dash-section-title">🖼️ Found Persons — Image Gallery (Police View)</h3>
+  <p style="font-size:13px;color:#666;margin-bottom:1rem;">All found person photos with AI match scores. Use these to verify and resolve cases.</p>
+  {% if found_list %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;">
+    {% for f in found_list %}
+    <div style="background:#fff;border-radius:12px;border:1.5px solid #e0e7ef;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="height:160px;background:#f0f4f8;position:relative;">
+        {% if f.found_photo %}
+          <img src="/uploads/{{ f.found_photo }}" alt="Found" style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem;color:#ccc;">👤</div>
+        {% endif %}
+        <span style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.65);color:#fff;font-size:10px;padding:2px 8px;border-radius:12px;">#{{ f.case_id }}</span>
+      </div>
+      <div style="padding:10px;">
+        <div style="font-size:13px;font-weight:700;color:#1a1a2e;">{{ f.gender }}, ~{{ f.age }} yrs</div>
+        <div style="font-size:11px;color:#666;margin-top:2px;">📍 {{ f.location }}</div>
+        <div style="font-size:11px;color:#888;margin-top:2px;">{{ f.condition }}</div>
+        <div style="font-size:10px;color:#aaa;margin-top:4px;">{{ f.reported_at }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-msg">No found persons reported yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

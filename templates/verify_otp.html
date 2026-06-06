@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='register';</script>
+<section class="section">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <div style="font-size:48px;">📱</div>
+        <h2 class="form-title" style="text-align:center;margin-top:.5rem;">Aadhaar OTP Verification</h2>
+        <p class="form-sub" style="text-align:center;">Enter the 6-digit OTP below to verify and submit your complaint.</p>
+      </div>
+
+      <div class="steps-bar">
+        <div class="step step-done">✅ Step 1: Email Login</div>
+        <div class="step step-done">✅ Step 2: Details Filled</div>
+        <div class="step step-active">🔐 Step 3: Enter OTP</div>
+      </div>
+
+      <!-- OTP Display Box — always visible for testing -->
+      {% if otp_value %}
+      <div style="background:linear-gradient(135deg,#FFF9C4,#FFFDE7);border:2.5px solid #F5A623;border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.2rem;text-align:center;">
+        <div style="font-size:12px;font-weight:700;color:#7A3C00;text-transform:uppercase;letter-spacing:.6px;margin-bottom:.5rem;">🔐 Your OTP (Testing Mode)</div>
+        <div style="font-size:42px;font-weight:800;letter-spacing:14px;color:#0D1F3C;font-family:monospace;">{{ otp_value }}</div>
+        {% if otp_phone %}<div style="font-size:12px;color:#7A3C00;margin-top:.4rem;">Sent to: {{ otp_phone }}</div>{% endif %}
+        <div style="font-size:11px;color:#999;margin-top:.4rem;">In production this goes to your Aadhaar-linked phone via SMS</div>
+      </div>
+      {% endif %}
+
+      <form method="POST" action="/verify-otp">
+        <div class="form-group">
+          <label>Enter 6-Digit OTP *</label>
+          <input type="text" name="otp" placeholder="Enter OTP" maxlength="6" pattern="[0-9]{6}"
+                 style="font-size:28px;letter-spacing:10px;text-align:center;font-weight:700;" required autofocus>
+        </div>
+        <button type="submit" class="submit-btn">✅ Verify OTP &amp; Submit</button>
+      </form>
+
+      <div style="text-align:center;margin-top:1rem;">
+        <a href="/resend-otp" class="track-link">Did not receive OTP? Resend →</a>
+      </div>
+
+      <div class="info-box warning-box" style="margin-top:1rem;font-size:12px;">
+        ⚠️ OTP valid for 10 minutes only.<br>
+        Never share your OTP with anyone.<br>
+        ReuniteAI will never ask for OTP by call.
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

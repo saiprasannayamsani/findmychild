@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='register';</script>
+<section class="section">
+  <div class="form-wrap">
+    <div class="form-card">
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <div style="font-size:3rem;">👮</div>
+        <h2 class="form-title">Police Officer Registration</h2>
+        <p class="form-sub">Register your official badge ID to access the Police Dashboard</p>
+      </div>
+
+      <div class="info-box" style="background:#E6F1FB;border-color:#85B7EB;margin-bottom:1.5rem;">
+        🔵 This registration is for <strong>authorised police officers only</strong>. Your Badge ID will be verified on the dashboard.
+      </div>
+
+      <form method="POST" action="/police/register">
+        <div class="form-section-title">🪪 Officer Details</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Badge / Service ID *</label>
+            <input type="text" name="badge_id" placeholder="e.g. TN-1234-SHO" required style="text-transform:uppercase;">
+          </div>
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" name="name" placeholder="Officer full name" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Police Station / Unit *</label>
+          <input type="text" name="station" placeholder="e.g. Anna Nagar Police Station, Chennai" required>
+        </div>
+
+        <div class="form-section-title">🔐 Login Credentials</div>
+        <div class="form-group">
+          <label>Official Email *</label>
+          <input type="email" name="email" placeholder="officer@tnpolice.gov.in" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Password *</label>
+            <input type="password" name="password" placeholder="Min 6 characters" required>
+          </div>
+          <div class="form-group">
+            <label>Mobile Number *</label>
+            <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX" required>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" style="background:linear-gradient(135deg,#185FA5,#0D3B6E);">
+          👮 Register as Police Officer
+        </button>
+      </form>
+
+      <div style="text-align:center;margin-top:1.2rem;font-size:14px;color:#666;">
+        Already registered? <a href="/police/login" style="color:#185FA5;font-weight:600;">Police Login →</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

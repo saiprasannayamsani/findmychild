@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<script>document.body.dataset.page='found_gallery';</script>
+<section class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
+    <div>
+      <h2 class="section-title">🔍 Found Persons Gallery</h2>
+      <p class="section-sub">Photos & details of found persons — visible to everyone. Recognise someone? Contact police immediately.</p>
+    </div>
+    <a href="/report-found" class="btn-primary">🙌 Report a Found Person</a>
+  </div>
+
+  <div class="info-box" style="background:#FFF3CD;border-color:#FFC107;margin-bottom:1.5rem;">
+    📢 <strong>Do you recognise anyone below?</strong> If so, call <strong>Police 100</strong> or <strong>Childline 1098</strong> immediately. 
+    All found persons have been reported by verified Aadhaar-linked citizens.
+  </div>
+
+  {% if found_list %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;">
+    {% for f in found_list %}
+    <div style="background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);overflow:hidden;border:1.5px solid #e8ecf0;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+      
+      <!-- Photo -->
+      <div style="width:100%;height:220px;background:#f0f4f8;position:relative;overflow:hidden;">
+        {% if f.found_photo %}
+          <img src="/uploads/{{ f.found_photo }}" alt="Found Person"
+               style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+          <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#aaa;">
+            <div style="font-size:4rem;">👤</div>
+            <div style="font-size:12px;margin-top:8px;">No photo available</div>
+          </div>
+        {% endif %}
+        <!-- Status badge -->
+        <div style="position:absolute;top:10px;right:10px;">
+          {% if f.match_info %}
+            <span style="background:#185FA5;color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;">
+              🤖 {{ f.match_info.score }}% Match
+            </span>
+          {% else %}
+            <span style="background:#28a745;color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;">
+              🟢 Found
+            </span>
+          {% endif %}
+        </div>
+        <div style="position:absolute;top:10px;left:10px;">
+          <span style="background:rgba(0,0,0,0.6);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;">
+            #{{ f.case_id }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div style="padding:1rem;">
+        <div style="font-size:1rem;font-weight:700;color:#1a1a2e;margin-bottom:6px;">
+          Unknown {{ f.gender }}, Approx. Age {{ f.age }}
+        </div>
+        <div style="font-size:13px;color:#555;margin-bottom:4px;">
+          📍 Found at: <strong>{{ f.location }}</strong>
+        </div>
+        <div style="font-size:13px;color:#555;margin-bottom:4px;">
+          💬 Condition: {{ f.condition }}
+        </div>
+        {% if f.desc %}
+        <div style="font-size:13px;color:#666;margin-bottom:4px;">
+          📝 {{ f.desc }}
+        </div>
+        {% endif %}
+        <div style="font-size:12px;color:#888;margin-top:8px;border-top:1px solid #eee;padding-top:8px;">
+          🕐 Reported: {{ f.reported_at }}
+        </div>
+
+        {% if f.match_info %}
+        <div style="background:#E6F1FB;border:1px solid #85B7EB;border-radius:8px;padding:8px;margin-top:10px;">
+          <div style="font-size:12px;color:#185FA5;font-weight:700;">
+            🤖 AI Possible Match: {{ f.match_info.name }}
+          </div>
+          <div style="font-size:11px;color:#378ADD;">
+            Case #{{ f.match_info.case_id }} · Similarity: {{ f.match_info.score }}%
+          </div>
+          <a href="/track/{{ f.match_info.case_id }}" style="font-size:11px;color:#185FA5;font-weight:600;">
+            View Missing Case →
+          </a>
+        </div>
+        {% endif %}
+
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <a href="tel:100" style="flex:1;text-align:center;background:#dc3545;color:#fff;padding:8px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
+            📞 Police 100
+          </a>
+          <a href="tel:1098" style="flex:1;text-align:center;background:#185FA5;color:#fff;padding:8px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
+            📞 Childline 1098
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:4rem 2rem;color:#888;">
+    <div style="font-size:4rem;margin-bottom:1rem;">🔍</div>
+    <h3 style="margin-bottom:0.5rem;">No Found Persons Reported Yet</h3>
+    <p>If you've found a missing person, please <a href="/report-found" style="color:#185FA5;">report them here</a>.</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
