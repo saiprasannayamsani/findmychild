@@ -1,6 +1,9 @@
-# FindMyChild — ReuniteAI v28
+Website:https://findmychild.onrender.com
 
-## What's New in v28
+
+# FindMyChild 
+
+## What's New 
 - 👮 Police Registration & Login (`/police/register`, `/police/login`)
 - 📸 Found person photo upload with live preview
 - 🖼️ Public Found Gallery (`/found-gallery`) — anyone can browse found persons
@@ -10,7 +13,7 @@
 ## Setup
 
 ```bash
-pip install flask werkzeug Pillow numpy
+
 python app.py
 ```
 
